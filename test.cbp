@@ -62,10 +62,10 @@
 			<Add library="sfml-system-s" />
 			<Add directory="C:/SFML-2.1/lib" />
 		</Linker>
-		<Unit filename="diagram.cpp" />
-		<Unit filename="diagram.h" />
 		<Unit filename="gui/button.cpp" />
 		<Unit filename="gui/button.h" />
+		<Unit filename="gui/diagram.cpp" />
+		<Unit filename="gui/diagram.h" />
 		<Unit filename="gui/text.cpp" />
 		<Unit filename="gui/text.h" />
 		<Unit filename="main.cpp" />

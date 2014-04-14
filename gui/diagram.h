@@ -16,11 +16,13 @@ public:
     int q;
     int r;
 
+    sf::VertexArray shape;
+
     Diagram(){
         x=0;y=0;width=0;height=0;p=1;q=1;r=0;
     }
 
-    Diagram(sf::RenderWindow* myWindow,int myX,int myY,int myWidth,int myHeight,std::string str){
+    Diagram(sf::RenderWindow* myWindow,int myX,int myY,int myWidth,int myHeight,std::string str): shape(){
         x=myX;
         y=myY;
         width=myWidth;
@@ -37,7 +39,21 @@ public:
             p=toInt(str);
             q=1;
         }
+
+        shape.setPrimitiveType(sf::LinesStrip);
+        shape.resize(p);
+
+        for(int i=0;i<shape.getVertexCount();i++){
+            std::cout<<cos(i*6.283/p)+x<<std::endl;
+            std::cout<<sin(i*6.283/p)+y<<std::endl;
+            shape[i].position=sf::Vector2f(cos(i*6.283/p)+x,sin(i*6.283/p)+y);
+            shape[(i+1)%p].position=sf::Vector2f(cos((i+1)%p*6.283/p)+x,sin((i+1)%p*6.283/p)+y);
+            shape[i].color=sf::Color::White;
+            shape[(i+1)%p].color=sf::Color::White;
+        }
     };
+
+    void draw();
 private:
     sf::RenderWindow* w;
     sf::RectangleShape rectangle;

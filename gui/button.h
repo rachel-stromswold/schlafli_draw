@@ -11,15 +11,16 @@ public:
     int y;
     int width;
     int height;
-    Diagram d;
+    //Diagram d;
 
     sf::Text text;
+    sf::Font f;
 
     void draw();
     void press(int xP,int yP,InputBox b);//only activates if the button was actually at the x and y location
     //void activate
 
-    Button(sf::RenderWindow* myWindow, sf::Font font,int myX,int myY,int myWidth,int myHeight,std::string str) : text(),rectangle(sf::Vector2f(myWidth*15, myHeight*15)){
+    Button(sf::RenderWindow* myWindow, sf::Font font,int myX,int myY,int myWidth,int myHeight,std::string str) : text(),rectangle(sf::Vector2f(myWidth*15, myHeight*15)),f(font){
         w=myWindow;
         x=myX;
         y=myY;
@@ -27,7 +28,7 @@ public:
         height=myHeight;
 
         text.setString(str);
-        text.setFont(font);
+        text.setFont(f);
         text.setCharacterSize(15);
         text.setColor(sf::Color::Black);
         rectangle.setOutlineThickness(2);
@@ -39,6 +40,11 @@ public:
 private:
     sf::RenderWindow* w;
     sf::RectangleShape rectangle;
+
+    sf::VertexArray shape;
+
+    //Returns a Vertex Array of the shape that can be drawn to the window
+    sf::VertexArray getDiagram(std::string str);
 };
 
 #endif //H_BUTTON

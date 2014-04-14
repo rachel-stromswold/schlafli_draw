@@ -673,7 +673,7 @@
 	<string>
 	<vector>
 
-1397166478 c:\cprojects\test\gui\text.h
+1397273182 c:\cprojects\test\gui\text.h
 	<SFML/Graphics.hpp>
 	<string>
 
@@ -682,11 +682,12 @@
 	<string>
 	".\gui\text.h"
 
-1397174255 source:c:\cprojects\test\gui\button.cpp
+1397519131 source:c:\cprojects\test\gui\button.cpp
 	<SFML/Graphics.hpp>
 	<string>
 	"button.h"
 	"diagram.h"
+	<iostream>
 
 1397011246 source:c:\cprojects\test\gui\text.cpp
 	<SFML/Graphics.hpp>
@@ -695,17 +696,22 @@
 
 1397101207 source:c:\cprojects\test\diagram.cpp
 
-1397182218 c:\cprojects\test\gui\button.h
+1397519114 c:\cprojects\test\gui\button.h
 	<SFML/Graphics.hpp>
 	<string>
 	"text.h"
 	"diagram.h"
 
-1397182438 c:\cprojects\test\gui\diagram.h
+1397491668 c:\cprojects\test\gui\diagram.h
 	<SFML/Graphics.hpp>
 	<string>
 	<iostream>
 	<math.h>
 
-1397101207 source:c:\cprojects\test\gui\diagram.cpp
+1397501037 source:c:\cprojects\test\gui\diagram.cpp
+	<SFML/Graphics.hpp>
+	<string>
+	<iostream>
+	<math.h>
+	"diagram.h"
 
