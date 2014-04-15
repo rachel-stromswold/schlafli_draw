@@ -59,14 +59,19 @@ sf::VertexArray Button::GetDiagram(std::string str) {
         angle += 6.283 / p;
     }
 
-    sf::VertexArray lines = sf::VertexArray(sf::Lines, 2 * p);
-    for(int vertexIndex = 0, lineIndex = 0; lineIndex < lines.getVertexCount(); lineIndex++) {
-        lines[lineIndex] = vertices[vertexIndex];
-        lines[lineIndex].color = sf::Color::White;
+    int gcf = GreatestCommonFactor(p, q);
 
-        if(lineIndex % 2 == 0)
-            vertexIndex = (vertexIndex + q) % p;
-        std::cout << vertexIndex << ", " << lineIndex << std::endl;
+    // Draws the lines on the diagram
+    sf::VertexArray lines = sf::VertexArray(sf::Lines, 2 * p);
+    for(int iii = 0; iii < gcf; iii++) {
+        int lineIndex = 0;
+        for(int vertexIndex = iii; lineIndex < lines.getVertexCount() / gcf; lineIndex++) {
+            lines[lineIndex + iii * 2 * p / gcf] = vertices[vertexIndex];
+            lines[lineIndex + iii * 2 * p / gcf].color = sf::Color::White;
+
+            if((lineIndex + iii * 2 * p / gcf) % 2 == 0)
+                vertexIndex = (vertexIndex + q) % p;
+        }
     }
     return lines;
 }
@@ -82,4 +87,14 @@ void Button::Press(int xP, int yP, InputBox b){
         //d = Diagram(w, 0, 0, 100, 100, b.stored.getString());
         m_shape = GetDiagram(b.GetStoredString());
     }
+}
+
+int GreatestCommonFactor(int a, int b) {
+  int c = 1;
+  while (a != 0) {
+     c = a;
+     a = b % a;
+     b = c;
+  }
+  return b;
 }

@@ -31,4 +31,7 @@ public:
     Button(sf::RenderWindow* window, sf::Font font, int x, int y, int width, int height, std::string str);
 };
 
+// Returns the greatest common factor of the inputs
+int GreatestCommonFactor(int a, int b);
+
 #endif //BUTTON_H
