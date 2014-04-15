@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include ".\gui\text.h"
 #include ".\gui\button.h"
+#include ".\gui\diagram.h"
 #include <iostream>
 
 int main() {
@@ -9,8 +10,9 @@ int main() {
     sf::Font inFont;
     if(!inFont.loadFromFile("VeraMono.ttf")){/*error handling*/}
 
-    InputBox b(&window, inFont, 5, 5, 10, 1);
-    Button but(&window, inFont, 160, 5, 10, 1, "Click to Submit");
+    InputBox input = InputBox(&window, inFont, 5, 5, 10, 1);
+    Button but = Button(&window, inFont, 160, 5, 10, 1, "Click to Submit");
+    Diagram poly = Diagram(&window);
 
     while (window.isOpen())
     {
@@ -20,17 +22,22 @@ int main() {
             if(event.type == sf::Event::Closed) {
                 window.close();
             } else if (event.type == sf::Event::TextEntered) {
-                b.EnterText(event.text.unicode);
+                input.EnterText(event.text.unicode);
             } else if (event.type == sf::Event::MouseButtonPressed) {
-                if (event.mouseButton.button == sf::Mouse::Left) {
-                    but.Press(event.mouseButton.x, event.mouseButton.y, b);
+                if (event.mouseButton.button == sf::Mouse::Left &&
+                    but.IsPressed(event.mouseButton.x, event.mouseButton.y))
+                {
+                    poly.SetPQR(input.GetStoredString());
+                    poly.MakeDiagram();
                 }
             }
         }
 
         window.clear();
-        b.Draw();
+        input.Draw();
         but.Draw();
+        poly.Draw();
+        window.draw(poly.GetDiagram());
         window.display();
     }
     return 0;

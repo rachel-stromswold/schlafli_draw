@@ -1,7 +1,9 @@
+#ifndef INPUT_BOX_H
+#define INPUT_BOX_H
+
 #include <SFML/Graphics.hpp>
 #include <string>
-#ifndef H_INPUT_BOX
-#define H_INPUT_BOX
+
 /*
 class TextSettings {
 public:
@@ -37,4 +39,4 @@ public:
     std::string GetStoredString();
 };
 
-#endif /*H_INPUT_BOX*/
+#endif //INPUT_BOX_H
