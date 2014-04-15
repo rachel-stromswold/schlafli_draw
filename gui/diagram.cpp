@@ -16,6 +16,7 @@ Diagram::Diagram() {
 Diagram::Diagram(sf::RenderWindow* window, std::string str) :
     m_shape(sf::Lines, 5)
 {
+    m_w = window;
     if (!str.empty())
         SetPQR(str);
 };
@@ -81,7 +82,7 @@ void Diagram::MakeDiagram(std::string str) {
 }
 
 void Diagram::Draw() {
-//    m_w->draw(m_shape);
+    m_w->draw(m_shape);
 }
 
 sf::VertexArray Diagram::GetDiagram() {

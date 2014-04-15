@@ -37,7 +37,6 @@ int main() {
         input.Draw();
         but.Draw();
         poly.Draw();
-        window.draw(poly.GetDiagram());
         window.display();
     }
     return 0;
