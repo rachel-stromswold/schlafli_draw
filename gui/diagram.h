@@ -24,10 +24,10 @@ public:
     Diagram();
     Diagram(sf::RenderWindow* window, int x, int y, int width, int height, std::string str);
 
-    void draw();
+    void Draw();
 };
 
 // Converts a string with a number in it to an integer containing that number; move to better location in the future
-int toInt(std::string str);
+int ToInt(std::string str);
 
 #endif //H_DIAGRAM

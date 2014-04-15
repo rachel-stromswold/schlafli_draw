@@ -16,18 +16,16 @@ private:
 
     sf::Text m_text;
     sf::Font m_f;
-
     sf::RenderWindow* m_w;
     sf::RectangleShape m_rectangle;
-
     sf::VertexArray m_shape;
 
     //Returns a Vertex Array of the shape that can be drawn to the window
-    sf::VertexArray getDiagram(std::string str);
+    sf::VertexArray GetDiagram(std::string str);
 
 public:
-    void draw();
-    void press(int xP,int yP,InputBox b); //only activates if the button was actually at the x and y location
+    void Draw();
+    void Press(int xP,int yP,InputBox b); //only activates if the button was actually at the x and y location
     //void activate
 
     Button(sf::RenderWindow* window, sf::Font font, int x, int y, int width, int height, std::string str);

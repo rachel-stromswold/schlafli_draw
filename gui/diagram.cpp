@@ -5,7 +5,7 @@
 #include "diagram.h"
 
 // Converts a string with a number in it to an integer containing that number
-int toInt(std::string str) {
+int ToInt(std::string str) {
     int ret = 0;
     for(int i = str.length() - 1; i >= 0; i--) {
         ret += pow(10, str.length() - 1 - i) * (str[i] - '0');
@@ -36,10 +36,10 @@ Diagram::    Diagram(sf::RenderWindow* window, int x, int y, int width, int heig
     }
 
     if(str.find('/') != std::string::npos) {
-        m_p = toInt(str.substr(0, str.find('/')));
-        m_q = toInt(str.substr(str.find('/') + 1, std::string::npos));
+        m_p = ToInt(str.substr(0, str.find('/')));
+        m_q = ToInt(str.substr(str.find('/') + 1, std::string::npos));
     } else {
-        m_p = toInt(str);
+        m_p = ToInt(str);
         m_q = 1;
     }
 
@@ -57,7 +57,7 @@ Diagram::    Diagram(sf::RenderWindow* window, int x, int y, int width, int heig
     }
 };
 
-void Diagram::draw(){
-    //w->draw(shape);
+void Diagram::Draw(){
+    //w->Draw(shape);
     std::cout << "Chuck testa";
 }

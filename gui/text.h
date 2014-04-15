@@ -17,41 +17,24 @@ public:
 };
 */
 class InputBox {
-public:
-    sf::Font f;
-    bool focused;
-    int x;
-    int y;
-    int width;
-    int height;
-
-    sf::Text stored;
-
-    void draw();
-    void enterText(char n);
-
-    InputBox(sf::RenderWindow* myWindow, sf::Font font, int myX, int myY, int charWidth, int charHeight) : stored(),rectangle(sf::Vector2f(charWidth*15, charHeight*15)){
-        w=myWindow;
-        f=font;
-        x=myX;
-        y=myY;
-        width=charWidth;
-        height=charHeight;
-        focused=false;
-
-        stored.setString("");
-        stored.setFont(f);
-        stored.setCharacterSize(15);
-        stored.setColor(sf::Color::Black);
-        rectangle.setOutlineThickness(2);
-        rectangle.setOutlineColor(sf::Color(100,100,100));
-
-        rectangle.setPosition(x,y);
-        stored.setPosition(x,y-2);
-    };
 private:
-    sf::RenderWindow* w;
-    sf::RectangleShape rectangle;
+    sf::Font m_f;
+    bool m_isFocused;
+    int m_x;
+    int m_y;
+    int m_width;
+    int m_height;
+
+    sf::Text m_stored;
+    sf::RenderWindow* m_w;
+    sf::RectangleShape m_rectangle;
+public:
+    InputBox(sf::RenderWindow* window, sf::Font font, int x, int y, int charWidth, int charHeight);
+
+    void Draw();
+    void EnterText(char n);
+
+    std::string GetStoredString();
 };
 
 #endif /*H_INPUT_BOX*/

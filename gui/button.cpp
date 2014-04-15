@@ -26,7 +26,7 @@ Button::Button(sf::RenderWindow* window, sf::Font font, int x, int y, int width,
         m_text.setPosition(x,y-2);
     }
 
-sf::VertexArray Button::getDiagram(std::string str) {
+sf::VertexArray Button::GetDiagram(std::string str) {
     int p = 0;
     int q = 1;
     if(str.find('{') != std::string::npos && str.rfind('}') != std::string::npos) {//if both { and } are present
@@ -34,10 +34,10 @@ sf::VertexArray Button::getDiagram(std::string str) {
     }
 
     if(str.find('/') != std::string::npos) {
-        p = toInt(str.substr(0, str.find('/')));
-        q = toInt(str.substr(str.find('/') + 1, std::string::npos));
+        p = ToInt(str.substr(0, str.find('/')));
+        q = ToInt(str.substr(str.find('/') + 1, std::string::npos));
     } else {
-        p = toInt(str);
+        p = ToInt(str);
         q = 1;
     }
 
@@ -65,15 +65,15 @@ sf::VertexArray Button::getDiagram(std::string str) {
     return ret;
 }
 
-void Button::draw(){
+void Button::Draw(){
     m_w->draw(m_rectangle);
     m_w->draw(m_text);
     m_w->draw(m_shape);
 }
 
-void Button::press(int xP, int yP, InputBox b){
+void Button::Press(int xP, int yP, InputBox b){
     if(m_x < xP && xP <m_x + m_width * 15 && m_y < yP && yP < m_y + m_height * 15) {
         //d = Diagram(w, 0, 0, 100, 100, b.stored.getString());
-        m_shape = getDiagram(b.stored.getString());
+        m_shape = GetDiagram(b.GetStoredString());
     }
 }
