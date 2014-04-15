@@ -4,6 +4,9 @@
 #include "diagram.h"
 #include <iostream>
 
+#define PI atan(1) * 4
+#define TAU 2 * PI
+
 Button::Button(sf::RenderWindow* window, sf::Font font, int x, int y, int width, int height, std::string str) :
         m_text(),
         m_rectangle(sf::Vector2f(width * 15, height * 15)) ,
@@ -44,7 +47,7 @@ sf::VertexArray Button::GetDiagram(std::string str) {
     sf::VertexArray vertices = sf::VertexArray(sf::Points, p);
 
     // The initial angle (for the first vertex)
-    double angle = 3.1415 / 2 + (6.283 / (2 * p)) * (p + 1 % 2);
+    double angle = PI / 2 + (TAU / (2 * p)) * (p + 1 % 2);
     int scale = 220;
     int centerX = 300;
     int centerY = 250;
@@ -57,7 +60,7 @@ sf::VertexArray Button::GetDiagram(std::string str) {
         vertices[iii].color = sf::Color::White;
 
         // Calculates the angle that the next point will be at
-        angle += 6.283 / p;
+        angle += TAU / p;
     }
 
     int gcf = GreatestCommonFactor(p, q);
@@ -69,8 +72,8 @@ sf::VertexArray Button::GetDiagram(std::string str) {
         for(int vertexIndex = iii; lineIndex < lines.getVertexCount() / gcf; lineIndex++) {
             lines[lineIndex + iii * 2 * p / gcf] = vertices[vertexIndex];
             lines[lineIndex + iii * 2 * p / gcf].color = sf::Color((lineIndex * 23425) % 255,
-                                                                   (lineIndex * 93245) % 255,
-                                                                   (lineIndex * 65425) % 255,
+                                                                   (lineIndex * 93245 + 200) % 255,
+                                                                   (lineIndex * 65425 + 100) % 255,
                                                                    255);//sf::Color::White;
 
             if((lineIndex + iii * 2 * p / gcf) % 2 == 0)
