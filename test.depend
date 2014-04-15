@@ -715,7 +715,7 @@
 	<math.h>
 	"diagram.h"
 
-1397569347 source:c:\users\devon\desktop\workspace\schlafli\gui\button.cpp
+1397573837 source:c:\users\devon\desktop\workspace\schlafli\gui\button.cpp
 	<SFML/Graphics.hpp>
 	<string>
 	"button.h"
@@ -748,7 +748,7 @@
 	<string>
 	"text.h"
 
-1397569879 source:c:\users\devon\desktop\workspace\schlafli\main.cpp
+1397570054 source:c:\users\devon\desktop\workspace\schlafli\main.cpp
 	<SFML/Graphics.hpp>
 	".\gui\text.h"
 	".\gui\button.h"

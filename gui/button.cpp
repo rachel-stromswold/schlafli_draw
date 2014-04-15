@@ -20,10 +20,10 @@ Button::Button(sf::RenderWindow* window, sf::Font font, int x, int y, int width,
         m_text.setCharacterSize(15);
         m_text.setColor(sf::Color::Black);
         m_rectangle.setOutlineThickness(2);
-        m_rectangle.setOutlineColor(sf::Color(255,255,255));
+        m_rectangle.setOutlineColor(sf::Color(255, 255, 255));
 
-        m_rectangle.setPosition(x,y);
-        m_text.setPosition(x,y-2);
+        m_rectangle.setPosition(x, y);
+        m_text.setPosition(x, y - 2);
     }
 
 sf::VertexArray Button::GetDiagram(std::string str) {
@@ -41,28 +41,24 @@ sf::VertexArray Button::GetDiagram(std::string str) {
         q = 1;
     }
 
-    sf::VertexArray ret(sf::Lines,p);
+    sf::VertexArray vertices = sf::VertexArray(sf::Points, p);
 
-    int currAngle = 0;
-    int nextAngle = 0;
+    // The initial angle (for the first vertex)
+    double angle = 3.1415 / 2 + (6.283 / (2 * p)) * (p + 1 % 2);
     int scale = 64;
-    int offset = 100;
+    int centerX = 100;
+    int centerY = 100;
 
-    for(int i = 0; i < ret.getVertexCount(); i++) {
-        //std::cout << i * 6.283 / p << std::endl;
-        //std::cout << (i + q) % p * 6.283 / p << std::endl;
+    // Calculate the location of each vertex
+    for(int iii = 0; iii < vertices.getVertexCount(); iii++) {
+        // Adds the vertices to the diagram
+        vertices[iii].position = sf::Vector2f(centerX + cos(angle) * scale, centerY - sin(angle) * scale);
+        vertices[iii].color = sf::Color::White;
 
-        //calculates the angle that each given point will be at
-        currAngle = i * 6.283 / p;
-        nextAngle = (i + q) % p * 6.283 / p;
-
-        //Actually adds in the lines to the diagram
-        ret[i].position = sf::Vector2f(cos(currAngle) * scale + offset, sin(currAngle) * scale + offset);
-        ret[i + 1].position = sf::Vector2f(cos(nextAngle) * scale + offset, sin(nextAngle) * scale + offset);
-        ret[i].color = sf::Color::White;
-        ret[i + 1].color = sf::Color::White;
+        // Calculates the angle that the next point will be at
+        angle += 6.283 / p;
     }
-    return ret;
+    return vertices;
 }
 
 void Button::Draw(){
