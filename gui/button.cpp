@@ -58,7 +58,17 @@ sf::VertexArray Button::GetDiagram(std::string str) {
         // Calculates the angle that the next point will be at
         angle += 6.283 / p;
     }
-    return vertices;
+
+    sf::VertexArray lines = sf::VertexArray(sf::Lines, 2 * p);
+    for(int vertexIndex = 0, lineIndex = 0; lineIndex < lines.getVertexCount(); lineIndex++) {
+        lines[lineIndex] = vertices[vertexIndex];
+        lines[lineIndex].color = sf::Color::White;
+
+        if(lineIndex % 2 == 0)
+            vertexIndex = (vertexIndex + q) % p;
+        std::cout << vertexIndex << ", " << lineIndex << std::endl;
+    }
+    return lines;
 }
 
 void Button::Draw(){
