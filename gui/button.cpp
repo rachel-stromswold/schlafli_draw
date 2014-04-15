@@ -45,14 +45,15 @@ sf::VertexArray Button::GetDiagram(std::string str) {
 
     // The initial angle (for the first vertex)
     double angle = 3.1415 / 2 + (6.283 / (2 * p)) * (p + 1 % 2);
-    int scale = 64;
-    int centerX = 100;
-    int centerY = 100;
+    int scale = 220;
+    int centerX = 300;
+    int centerY = 250;
 
     // Calculate the location of each vertex
     for(int iii = 0; iii < vertices.getVertexCount(); iii++) {
         // Adds the vertices to the diagram
         vertices[iii].position = sf::Vector2f(centerX + cos(angle) * scale, centerY - sin(angle) * scale);
+
         vertices[iii].color = sf::Color::White;
 
         // Calculates the angle that the next point will be at
@@ -67,7 +68,10 @@ sf::VertexArray Button::GetDiagram(std::string str) {
         int lineIndex = 0;
         for(int vertexIndex = iii; lineIndex < lines.getVertexCount() / gcf; lineIndex++) {
             lines[lineIndex + iii * 2 * p / gcf] = vertices[vertexIndex];
-            lines[lineIndex + iii * 2 * p / gcf].color = sf::Color::White;
+            lines[lineIndex + iii * 2 * p / gcf].color = sf::Color((lineIndex * 23425) % 255,
+                                                                   (lineIndex * 93245) % 255,
+                                                                   (lineIndex * 65425) % 255,
+                                                                   255);//sf::Color::White;
 
             if((lineIndex + iii * 2 * p / gcf) % 2 == 0)
                 vertexIndex = (vertexIndex + q) % p;
