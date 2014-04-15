@@ -26,14 +26,6 @@ Button::Button(sf::RenderWindow* window, sf::Font font, int x, int y, int width,
         m_text.setPosition(x,y-2);
     }
 
-int toInt(std::string str) {
-    int ret = 0;
-    for(int i = str.length() - 1; i >= 0; i--) {
-        ret += pow(10, str.length() - 1 - i)*(str[i] - '0');
-    }
-    return ret;
-}
-
 sf::VertexArray Button::getDiagram(std::string str) {
     int p = 0;
     int q = 1;
@@ -41,7 +33,7 @@ sf::VertexArray Button::getDiagram(std::string str) {
         str = str.substr(str.find('{') + 1, str.rfind('}') - str.find('{') - 1);
     }
 
-    if(str.find('/')!=std::string::npos) {
+    if(str.find('/') != std::string::npos) {
         p = toInt(str.substr(0, str.find('/')));
         q = toInt(str.substr(str.find('/') + 1, std::string::npos));
     } else {
