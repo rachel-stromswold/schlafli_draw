@@ -26,7 +26,7 @@ public:
     void SetPQR(std::string str);
 
     void MakeDiagram(std::string str = "");
-    void Grow(sf::VertexArray* arr, int x, int y, double angle, double delta, int scale, int i);
+    void Grow(sf::VertexArray* arr, int x, int y, double angle, double delta, int i);
 
     void Draw();
 };

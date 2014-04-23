@@ -77,13 +77,11 @@ void Diagram::MakeDiagram(std::string str) {
     if(str != "")
         SetPQR(str);
 
-    // The initial angle (for the first vertex)
-    double angle = PI / 2 + (PI / m_p * ((m_p + 1) % 2));
-    //double angle = 0;
-
     m_vertices = sf::VertexArray(sf::Points, 2 * m_p);
     m_shape = sf::VertexArray(sf::Lines, 2 * m_p);
     if(m_r == -1) {
+        // The initial angle (for the first vertex)
+        double angle = PI / 2 + (PI / m_p * ((m_p + 1) % 2));
         // Calculate the location of each vertex
         for(int iii = 0; iii < m_vertices.getVertexCount() - 1; iii += 2) {
             // Adds the vertices to the diagram
@@ -98,16 +96,18 @@ void Diagram::MakeDiagram(std::string str) {
         }
     } else { // r > 0
         m_scale = 150; // smaller tesselations
+        // The initial angle (for the first vertex)
+        double angle = (m_p - 2) * PI / m_p;
         m_vertices = sf::VertexArray();
         m_vertices.setPrimitiveType(sf::Points);
-        double angle = (m_p - 2) * PI / m_p;
 
-        Grow(&m_vertices, m_centerX, m_centerY, 0.0, angle, m_scale, 4);
+        Grow(&m_vertices, m_centerX, m_centerY, 0.0, angle, 3);
+        std::cout<<m_vertices.getVertexCount()<<std::endl;
     }
 
     // Draws the lines on the diagram
     sf::VertexArray lines = sf::VertexArray(sf::Lines, m_vertices.getVertexCount());
-    for(int iii = 0; iii < m_vertices.getVertexCount(); iii += 2) {
+    for(int iii = 0; iii < m_vertices.getVertexCount() - 1; iii += 2) {
         lines[iii] = m_vertices[iii];
         lines[iii + 1] = m_vertices[iii + 1];
         lines[iii].color = sf::Color(((iii + 209) * 23432) % 255,
@@ -120,13 +120,15 @@ void Diagram::MakeDiagram(std::string str) {
     m_shape = lines;
 }
 
-void Diagram::Grow(sf::VertexArray* arr, int x, int y, double angle, double delta, int scale, int i){
-    if(i > 0/* && IsGood(arr,x,y)*/ ) {//if we are reasonably close
-        for(double ii = angle + delta; ii < angle + 2 * PI; ii += delta) {
+void Diagram::Grow(sf::VertexArray* arr, int x, int y, double angle, double delta, int i){
+    if(i>0 && x>0 && y>0 && x<m_w->getSize().x && y<m_w->getSize().y/* && IsGood(arr,x,y)*/ ) { //if we are reasonably close
+        for(double ii = angle + delta; ii < angle + TAU; ii += delta) {
             arr->append(sf::Vertex(sf::Vector2f(x, y)));
-            Grow(arr, x + scale * cos(angle + ii), y - scale * sin(angle + ii), angle + ii, delta, scale, i - 1);
+            Grow(arr, x + m_scale * cos(angle + ii), y - m_scale * sin(angle + ii), angle + ii, delta, i - 1);
+            std::cout << "looping" << std::endl;
         }
     } else {
+        std::cout << "terminating" << std::endl;
         //arr->append(sf::Vertex(sf::Vector2f(x, y)));
     }
 }
@@ -134,9 +136,6 @@ void Diagram::Grow(sf::VertexArray* arr, int x, int y, double angle, double delt
 void Diagram::Draw() {
     m_w->draw(m_shape);
 }
-
-
-
 
 // Converts a string with a number in it to an integer containing that number
 int ToInt(std::string str) {
