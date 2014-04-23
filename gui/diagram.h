@@ -18,11 +18,11 @@ public:
     Diagram();
     Diagram(sf::RenderWindow* window, std::string str = "");
 
+    bool IsGood(sf::VertexArray* a, int x, int y);
     void SetPQR(std::string str);
+
     void MakeDiagram(std::string str = "");
-
-sf::VertexArray GetDiagram();
-
+    void Grow(sf::VertexArray* arr, int x, int y, double angle, double delta, int scale, int i);
 
     void Draw();
 };

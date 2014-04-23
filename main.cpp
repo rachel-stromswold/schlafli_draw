@@ -19,17 +19,19 @@ int main() {
         sf::Event event;
         while (window.pollEvent(event))
         {
-            if(event.type == sf::Event::Closed) {
+            if(event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed &&
+                                                   event.key.code == sf::Keyboard::Escape)) {
                 window.close();
             } else if (event.type == sf::Event::TextEntered) {
                 input.EnterText(event.text.unicode);
-            } else if (event.type == sf::Event::MouseButtonPressed) {
-                if (event.mouseButton.button == sf::Mouse::Left &&
-                    but.IsPressed(event.mouseButton.x, event.mouseButton.y))
-                {
-                    poly.SetPQR(input.GetStoredString());
-                    poly.MakeDiagram();
-                }
+            } else if ((event.type == sf::Event::MouseButtonPressed &&
+                        event.mouseButton.button == sf::Mouse::Left &&
+                        but.IsPressed(event.mouseButton.x, event.mouseButton.y)) ||
+                       (event.type == sf::Event::KeyPressed &&
+                        event.key.code == sf::Keyboard::Return))
+            {
+                //poly.SetPQR(input.GetStoredString());
+                poly.MakeDiagram(input.GetStoredString());
             }
         }
 

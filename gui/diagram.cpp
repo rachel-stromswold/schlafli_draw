@@ -8,9 +8,9 @@
 #define TAU 2 * PI
 
 Diagram::Diagram() {
-        m_p = 1;
+        m_p = 3;
         m_q = 1;
-        m_r = 0;
+        m_r = -1;
 }
 
 Diagram::Diagram(sf::RenderWindow* window, std::string str) :
@@ -21,18 +21,45 @@ Diagram::Diagram(sf::RenderWindow* window, std::string str) :
         SetPQR(str);
 };
 
-void Diagram::SetPQR(std::string str) {
-    m_p = 0;
-    m_q = 1;
-    m_r = 0;
+bool Diagram::IsGood(sf::VertexArray* a, int x, int y) {
+    sf::VertexArray arr =* a;
+    int xx;
+    int yy;
+    if(arr.getVertexCount() == 0)
+        return true;
+    for(int i = 0; i < arr.getVertexCount() - 1; i += 2){
+        xx = arr[i].position.x;
+        yy = arr[i].position.y;
+        if(x - xx < 5 || xx - x < 5 || yy - y < 5 || y - yy < 5) {
+            return false;
+        }
+    }
+    return true;
+}
 
-    if(str.find('{') != std::string::npos && str.rfind('}') != std::string::npos) {//if both { and } are present
+void Diagram::SetPQR(std::string str) {
+    m_p = 1;
+    m_q = 1;
+    m_r = -1;
+
+    if(str == "") return;
+
+    if(str.find('{') != std::string::npos && str.rfind('}') != std::string::npos) { //if both { and } are present
         str = str.substr(str.find('{') + 1, str.rfind('}') - str.find('{') - 1);
     }
 
     if(str.find('/') != std::string::npos) {
         m_p = ToInt(str.substr(0, str.find('/')));
         m_q = ToInt(str.substr(str.find('/') + 1, std::string::npos));
+    } else if(str.find(',') != std::string::npos) {
+        m_p = ToInt(str.substr(0, str.find(',')));
+        m_r = ToInt(str.substr(str.find(',') + 1, std::string::npos));
+
+        //(p-2)*180/p is the interior angle of 1 vertex on the regular shape
+        if(m_r * ((m_p - 2) * 180 / m_p) != 360){
+            std::cout << m_p << std::endl;
+            m_r = -1;
+        }
     } else {
         m_p = ToInt(str);
         m_q = 1;
@@ -40,54 +67,73 @@ void Diagram::SetPQR(std::string str) {
 }
 
 void Diagram::MakeDiagram(std::string str) {
-    if(!str.empty())
+    m_p = 0;
+    m_q = 1;
+    m_r = -1;
+
+    //if(str != NULL)
         SetPQR(str);
 
-    m_vertices = sf::VertexArray(sf::Points, m_p);
-
     // The initial angle (for the first vertex)
-    double angle = PI / 2 + (TAU / (2 * m_p)) * (m_p + 1 % 2);
+    double angle = PI / 2 + PI / m_p * ((m_p + 1) % 2);
+    //double angle = 0;
     int scale = 220;
     int centerX = 300;
     int centerY = 250;
 
-    // Calculate the location of each vertex
-    for(int iii = 0; iii < m_vertices.getVertexCount(); iii++) {
-        // Adds the vertices to the diagram
-        m_vertices[iii].position = sf::Vector2f(centerX + cos(angle) * scale, centerY - sin(angle) * scale);
-        m_vertices[iii].color = sf::Color::White;
+    m_vertices = sf::VertexArray(sf::Points, 2 * m_p);
+    m_shape = sf::VertexArray(sf::Lines, 2 * m_p);
+    if(m_r == -1) {
+        // Calculate the location of each vertex
+        for(int iii = 0; iii < m_vertices.getVertexCount() - 1; iii += 2) {
+            // Adds the vertices to the diagram
+            m_vertices[iii].position = sf::Vector2f(centerX + cos(angle) * scale, centerY - sin(angle) * scale);
+            angle += m_q *(TAU / m_p);
+            m_vertices[iii + 1].position = sf::Vector2f(centerX + cos(angle) * scale, centerY - sin(angle) * scale);
+            angle -= (m_q - 1)*(TAU / m_p);
+            m_vertices[iii].color = sf::Color::White;
+        }
+    } else { // r > 0
+        scale = 150; // smaller tesselations
+        m_vertices = sf::VertexArray();
+        m_vertices.setPrimitiveType(sf::Points);
+        double angle = (m_p - 2) * PI / m_p;
 
-        // Calculates the angle that the next point will be at
-        angle += TAU / m_p;
+        Grow(&m_vertices,centerX,centerY,0.0,angle,scale,4);
     }
-
-    int gcf = GreatestCommonFactor(m_p, m_q);
 
     // Draws the lines on the diagram
-    sf::VertexArray lines = sf::VertexArray(sf::Lines, 2 * m_p);
-    for(int iii = 0; iii < gcf; iii++) {
-        int lineIndex = 0;
-        for(int vertexIndex = iii; lineIndex < lines.getVertexCount() / gcf; lineIndex++) {
-            lines[lineIndex + iii * 2 * m_p / gcf] = m_vertices[vertexIndex];
-            lines[lineIndex + iii * 2 * m_p / gcf].color = sf::Color((lineIndex * 23425) % 255,
-                                                                     (lineIndex * 93245) % 255,
-                                                                     (lineIndex * 65425) % 255,
-                                                                     255);//sf::Color::White;
-
-            if((lineIndex + iii * 2 * m_p / gcf) % 2 == 0)
-                vertexIndex = (vertexIndex + m_q) % m_p;
-        }
+    sf::VertexArray lines = sf::VertexArray(sf::Lines, m_vertices.getVertexCount());
+    for(int iii = 0; iii < m_vertices.getVertexCount(); iii += 2) {
+        lines[iii] = m_vertices[iii];
+        lines[iii + 1] = m_vertices[iii + 1];
+        lines[iii].color = sf::Color(((iii + 209) * 23432) % 255,
+                                     ((iii + 742) * 53320) % 255,
+                                     ((iii + 564) * 87914) % 255, 255);//sf::Color::White;
+        lines[iii + 1].color = sf::Color(((iii + 87) * 12345) % 255,
+                                       ((iii + 343) * 53240) % 255,
+                                       ((iii + 123) * 98765) % 255, 255);//sf::Color::White;
     }
     m_shape = lines;
+}
+
+void Diagram::Grow(sf::VertexArray* arr, int x, int y, double angle, double delta, int scale, int i){
+    if(i > 0/* && isGood(arr,x,y)*/ ) {//if we are reasonably close
+        for(double ii = angle + delta; ii < angle + 2 * PI; ii += delta) {
+            arr->append(sf::Vertex(sf::Vector2f(x, y)));
+            Grow(arr, x + scale * cos(angle + ii), y - scale * sin(angle + ii), angle + ii, delta, scale, i - 1);
+        }
+    } else {
+        //arr->append(sf::Vertex(sf::Vector2f(x, y)));
+    }
 }
 
 void Diagram::Draw() {
     m_w->draw(m_shape);
 }
 
-sf::VertexArray Diagram::GetDiagram() {
-    return m_shape;
-}
+
+
 
 // Converts a string with a number in it to an integer containing that number
 int ToInt(std::string str) {

@@ -4,7 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include "text.h"
-#include "diagram.h"
 
 class Button{
 private:
@@ -12,27 +11,17 @@ private:
     int m_y;
     int m_width;
     int m_height;
-    //Diagram m_d;
 
     sf::Text m_text;
     sf::Font m_f;
     sf::RenderWindow* m_w;
     sf::RectangleShape m_rectangle;
-    sf::VertexArray m_shape;
-
-    //Returns a Vertex Array of the shape that can be drawn to the window
-    sf::VertexArray GetDiagram(std::string str);
 
 public:
-    void Draw();
-    void Press(int xP,int yP,InputBox b); //only activates if the button was actually at the x and y location
-    void Activate(InputBox b){
-        Press(m_x+1,m_y+1,b);
-    }
-
     Button(sf::RenderWindow* window, sf::Font font, int x, int y, int width, int height, std::string str);
-};
 
-void Grow(sf::VertexArray arr,int i);
+    bool IsPressed(int xP,int yP); //only activates if the button was actually at the x and y location
+    void Draw();
+};
 
 #endif //BUTTON_H
