@@ -10,13 +10,17 @@ private:
     int m_q;
     int m_r;
 
+    int m_scale;
+    int m_centerX;
+    int m_centerY;
+
     sf::RenderWindow* m_w;
 
     sf::VertexArray m_vertices;
     sf::VertexArray m_shape;
 public:
     Diagram();
-    Diagram(sf::RenderWindow* window, std::string str = "");
+    Diagram(sf::RenderWindow* window, int scale, int centerX, int centerY, std::string str = "");
 
     bool IsGood(sf::VertexArray* a, int x, int y);
     void SetPQR(std::string str);

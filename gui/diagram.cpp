@@ -8,17 +8,24 @@
 #define TAU 2 * PI
 
 Diagram::Diagram() {
-        m_p = 3;
-        m_q = 1;
-        m_r = -1;
+    m_p = 3;
+    m_q = 1;
+    m_r = -1;
+
+    m_scale = 220;
+    m_centerX = 300;
+    m_centerY = 250;
 }
 
-Diagram::Diagram(sf::RenderWindow* window, std::string str) :
+Diagram::Diagram(sf::RenderWindow* window, int scale, int centerX, int centerY, std::string str) :
     m_shape(sf::Lines, 5)
 {
     m_w = window;
     if (!str.empty())
         SetPQR(str);
+    m_scale = scale;
+    m_centerX = centerX;
+    m_centerY = centerY;
 };
 
 bool Diagram::IsGood(sf::VertexArray* a, int x, int y) {
@@ -67,19 +74,12 @@ void Diagram::SetPQR(std::string str) {
 }
 
 void Diagram::MakeDiagram(std::string str) {
-    m_p = 0;
-    m_q = 1;
-    m_r = -1;
-
-    //if(str != NULL)
+    if(str != "")
         SetPQR(str);
 
     // The initial angle (for the first vertex)
-    double angle = PI / 2 + PI / m_p * ((m_p + 1) % 2);
+    double angle = PI / 2 + (PI / m_p * ((m_p + 1) % 2));
     //double angle = 0;
-    int scale = 220;
-    int centerX = 300;
-    int centerY = 250;
 
     m_vertices = sf::VertexArray(sf::Points, 2 * m_p);
     m_shape = sf::VertexArray(sf::Lines, 2 * m_p);
@@ -87,19 +87,22 @@ void Diagram::MakeDiagram(std::string str) {
         // Calculate the location of each vertex
         for(int iii = 0; iii < m_vertices.getVertexCount() - 1; iii += 2) {
             // Adds the vertices to the diagram
-            m_vertices[iii].position = sf::Vector2f(centerX + cos(angle) * scale, centerY - sin(angle) * scale);
-            angle += m_q *(TAU / m_p);
-            m_vertices[iii + 1].position = sf::Vector2f(centerX + cos(angle) * scale, centerY - sin(angle) * scale);
-            angle -= (m_q - 1)*(TAU / m_p);
+            m_vertices[iii].position = sf::Vector2f(m_centerX + cos(angle) * m_scale,
+                                                    m_centerY - sin(angle) * m_scale);
+            angle += m_q * (TAU / m_p);
+            m_vertices[iii + 1].position = sf::Vector2f(m_centerX + cos(angle) * m_scale,
+                                                        m_centerY - sin(angle) * m_scale);
+            angle -= (m_q - 1) * (TAU / m_p);
             m_vertices[iii].color = sf::Color::White;
+            std::cout << m_vertices[iii].position.x << std::endl;
         }
     } else { // r > 0
-        scale = 150; // smaller tesselations
+        m_scale = 150; // smaller tesselations
         m_vertices = sf::VertexArray();
         m_vertices.setPrimitiveType(sf::Points);
         double angle = (m_p - 2) * PI / m_p;
 
-        Grow(&m_vertices,centerX,centerY,0.0,angle,scale,4);
+        Grow(&m_vertices, m_centerX, m_centerY, 0.0, angle, m_scale, 4);
     }
 
     // Draws the lines on the diagram
@@ -118,7 +121,7 @@ void Diagram::MakeDiagram(std::string str) {
 }
 
 void Diagram::Grow(sf::VertexArray* arr, int x, int y, double angle, double delta, int scale, int i){
-    if(i > 0/* && isGood(arr,x,y)*/ ) {//if we are reasonably close
+    if(i > 0/* && IsGood(arr,x,y)*/ ) {//if we are reasonably close
         for(double ii = angle + delta; ii < angle + 2 * PI; ii += delta) {
             arr->append(sf::Vertex(sf::Vector2f(x, y)));
             Grow(arr, x + scale * cos(angle + ii), y - scale * sin(angle + ii), angle + ii, delta, scale, i - 1);

@@ -12,7 +12,7 @@ int main() {
 
     InputBox input = InputBox(&window, inFont, 5, 5, 10, 1);
     Button but = Button(&window, inFont, 160, 5, 10, 1, "Click to Submit");
-    Diagram poly = Diagram(&window);
+    Diagram poly = Diagram(&window, 220, 300, 250);
 
     while (window.isOpen())
     {
@@ -30,8 +30,8 @@ int main() {
                        (event.type == sf::Event::KeyPressed &&
                         event.key.code == sf::Keyboard::Return))
             {
-                //poly.SetPQR(input.GetStoredString());
-                poly.MakeDiagram(input.GetStoredString());
+                poly.SetPQR(input.GetStoredString());
+                poly.MakeDiagram();
             }
         }
 
