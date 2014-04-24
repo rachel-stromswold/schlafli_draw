@@ -4,8 +4,8 @@
 #include <math.h>
 #include "diagram.h"
 
-#define PI atan(1) * 4
-#define TAU 2 * PI
+#define PI (atan(1) * 4)
+#define TAU (2 * PI)
 
 Diagram::Diagram() {
     m_p = 3;
@@ -28,19 +28,20 @@ Diagram::Diagram(sf::RenderWindow* window, int scale, int centerX, int centerY, 
     m_centerY = centerY;
 };
 
-bool Diagram::IsGood(sf::VertexArray* a, int x, int y) {
-    sf::VertexArray arr =* a;
-    int xx;
-    int yy;
-    if(arr.getVertexCount() == 0)
+bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
+    if(m_vertices.getVertexCount() == 0)
         return true;
-    for(int i = 0; i < arr.getVertexCount() - 1; i += 2){
-        xx = arr[i].position.x;
-        yy = arr[i].position.y;
-        if(x - xx < 5 || xx - x < 5 || yy - y < 5 || y - yy < 5) {
+    for(int iii = 0; iii < m_vertices.getVertexCount() - 1; iii += 2) {
+        if(m_vertices[iii].position.x == vert1.position.x && m_vertices[iii].position.y == vert1.position.y &&
+           m_vertices[iii + 1].position.x == vert2.position.x && m_vertices[iii + 1].position.y == vert2.position.y ||
+           m_vertices[iii].position.x == vert2.position.x && m_vertices[iii].position.y == vert2.position.y &&
+           m_vertices[iii + 1].position.x == vert1.position.x && m_vertices[iii + 1].position.y == vert1.position.y)
+        {
+            std::cout << "false" << std::endl;
             return false;
         }
     }
+    std::cout << "true" << std::endl;
     return true;
 }
 
@@ -95,14 +96,15 @@ void Diagram::MakeDiagram(std::string str) {
             std::cout << m_vertices[iii].position.x << std::endl;
         }
     } else { // r > 0
-        m_scale = 150; // smaller tesselations
+        m_scale = 50; // smaller tesselations
         // The initial angle (for the first vertex)
         double angle = (m_p - 2) * PI / m_p;
         m_vertices = sf::VertexArray();
         m_vertices.setPrimitiveType(sf::Points);
 
-        Grow(&m_vertices, m_centerX, m_centerY, 0.0, angle, 3);
-        std::cout<<m_vertices.getVertexCount()<<std::endl;
+        //Grow(&m_vertices, m_centerX, m_centerY, 0.0, angle, 3);
+        Tesselate(300, angle);
+        std::cout << m_vertices.getVertexCount() << std::endl;
     }
 
     // Draws the lines on the diagram
@@ -133,6 +135,41 @@ void Diagram::Grow(sf::VertexArray* arr, int x, int y, double angle, double delt
     }
 }
 
+void Diagram::Tesselate(int i, double delta) {
+    m_vertices = sf::VertexArray(sf::Lines, 1);
+    m_vertices[0] = sf::Vertex(sf::Vector2f(m_centerX, m_centerY));
+    for(int iii = 0; iii < i; iii += 2) {
+        int x = m_vertices[iii].position.x, y = m_vertices[iii].position.y;
+        if(0 < x && x < m_w->getSize().x && 0 < y && y < m_w->getSize().y) {
+            m_vertices[m_vertices.getVertexCount() - 1] = m_vertices[iii];
+            double initAngle = 0;
+            if(iii == 0)
+                initAngle = -delta;
+            else {
+                if (x >= m_vertices[iii - 1].position.x) initAngle += PI;
+                initAngle += atan(-(m_vertices[iii].position.y - m_vertices[iii - 1].position.y) /
+                                  (m_vertices[iii].position.x - m_vertices[iii - 1].position.x));
+            }
+            while(initAngle >= TAU) initAngle -= TAU; // put in [0, TAU) if too large
+            std::cout << initAngle * 180/PI << ", " << iii << ", " << x << std::endl;
+            for(double angle = initAngle; angle < TAU + initAngle; angle += delta) {
+                sf::Vertex vert = sf::Vertex(sf::Vector2f(m_vertices[iii].position.x + m_scale * cos(angle),
+                                                          m_vertices[iii].position.y - m_scale * sin(angle)));
+                if(iii == 0) {
+                    m_vertices.append(vert);
+                    m_vertices.append(m_vertices[iii]);
+                }
+                else if(IsGood(vert, m_vertices[m_vertices.getVertexCount() - 1])) {
+                    m_vertices.append(vert);
+                    m_vertices.append(m_vertices[iii]);
+                }
+            }
+        }
+        if(iii == 0) iii--;
+    }
+    m_vertices.resize(m_vertices.getVertexCount() - 1);
+}
+
 void Diagram::Draw() {
     m_w->draw(m_shape);
 }
@@ -144,14 +181,4 @@ int ToInt(std::string str) {
         ret += pow(10, str.length() - 1 - i) * (str[i] - '0');
     }
     return ret;
-}
-
-int GreatestCommonFactor(int a, int b) {
-  int c = 1;
-  while (a != 0) {
-     c = a;
-     a = b % a;
-     b = c;
-  }
-  return b;
 }
