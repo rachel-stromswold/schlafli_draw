@@ -36,9 +36,9 @@ int main() {
         }
 
         window.clear();
+        poly.Draw();
         input.Draw();
         but.Draw();
-        poly.Draw();
         window.display();
     }
     return 0;

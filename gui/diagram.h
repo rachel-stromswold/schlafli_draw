@@ -16,7 +16,6 @@ private:
 
     sf::RenderWindow* m_w;
 
-    sf::VertexArray m_vertices;
     sf::VertexArray m_shape;
 public:
     Diagram();
@@ -26,13 +25,15 @@ public:
     void SetPQR(std::string str);
 
     void MakeDiagram(std::string str = "");
-    void Grow(sf::VertexArray* arr, int x, int y, double angle, double delta, int i);
-    void Tesselate(int i, double delta);
+    void CreatePoly();
+    void Tesselate();
 
+    sf::Color Colorgen(int seed);
     void Draw();
 };
 
 // Converts a string with a number in it to an integer containing that number; move to better location in the future
 int ToInt(std::string str);
+sf::Color HSVtoRGB(int hue, double sat, double val);
 
 #endif //H_DIAGRAM

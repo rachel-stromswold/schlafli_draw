@@ -8,7 +8,7 @@
 #define TAU (2 * PI)
 
 Diagram::Diagram() {
-    m_p = 3;
+    m_p = 2;
     m_q = 1;
     m_r = -1;
 
@@ -18,7 +18,7 @@ Diagram::Diagram() {
 }
 
 Diagram::Diagram(sf::RenderWindow* window, int scale, int centerX, int centerY, std::string str) :
-    m_shape(sf::Lines, 5)
+    m_shape(sf::Lines, 0)
 {
     m_w = window;
     if (!str.empty())
@@ -29,24 +29,22 @@ Diagram::Diagram(sf::RenderWindow* window, int scale, int centerX, int centerY, 
 };
 
 bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
-    if(m_vertices.getVertexCount() == 0)
+    if(m_shape.getVertexCount() == 0)
         return true;
-    for(int iii = 0; iii < m_vertices.getVertexCount() - 1; iii += 2) {
-        if(m_vertices[iii].position.x == vert1.position.x && m_vertices[iii].position.y == vert1.position.y &&
-           m_vertices[iii + 1].position.x == vert2.position.x && m_vertices[iii + 1].position.y == vert2.position.y ||
-           m_vertices[iii].position.x == vert2.position.x && m_vertices[iii].position.y == vert2.position.y &&
-           m_vertices[iii + 1].position.x == vert1.position.x && m_vertices[iii + 1].position.y == vert1.position.y)
+    for(int iii = 0; iii < m_shape.getVertexCount() - 1; iii += 2) {
+        if(m_shape[iii].position.x == vert1.position.x && m_shape[iii].position.y == vert1.position.y &&
+           m_shape[iii + 1].position.x == vert2.position.x && m_shape[iii + 1].position.y == vert2.position.y ||
+           m_shape[iii].position.x == vert2.position.x && m_shape[iii].position.y == vert2.position.y &&
+           m_shape[iii + 1].position.x == vert1.position.x && m_shape[iii + 1].position.y == vert1.position.y)
         {
-            std::cout << "false" << std::endl;
             return false;
         }
     }
-    std::cout << "true" << std::endl;
     return true;
 }
 
 void Diagram::SetPQR(std::string str) {
-    m_p = 1;
+    m_p = 2;
     m_q = 1;
     m_r = -1;
 
@@ -65,7 +63,6 @@ void Diagram::SetPQR(std::string str) {
 
         //(p-2)*180/p is the interior angle of 1 vertex on the regular shape
         if(m_r * ((m_p - 2) * 180 / m_p) != 360){
-            std::cout << m_p << std::endl;
             m_r = -1;
         }
     } else {
@@ -78,96 +75,77 @@ void Diagram::MakeDiagram(std::string str) {
     if(str != "")
         SetPQR(str);
 
-    m_vertices = sf::VertexArray(sf::Points, 2 * m_p);
-    m_shape = sf::VertexArray(sf::Lines, 2 * m_p);
     if(m_r == -1) {
-        // The initial angle (for the first vertex)
-        double angle = PI / 2 + (PI / m_p * ((m_p + 1) % 2));
-        // Calculate the location of each vertex
-        for(int iii = 0; iii < m_vertices.getVertexCount() - 1; iii += 2) {
-            // Adds the vertices to the diagram
-            m_vertices[iii].position = sf::Vector2f(m_centerX + cos(angle) * m_scale,
-                                                    m_centerY - sin(angle) * m_scale);
-            angle += m_q * (TAU / m_p);
-            m_vertices[iii + 1].position = sf::Vector2f(m_centerX + cos(angle) * m_scale,
-                                                        m_centerY - sin(angle) * m_scale);
-            angle -= (m_q - 1) * (TAU / m_p);
-            m_vertices[iii].color = sf::Color::White;
-            std::cout << m_vertices[iii].position.x << std::endl;
-        }
+        CreatePoly();
     } else { // r > 0
-        m_scale = 50; // smaller tesselations
-        // The initial angle (for the first vertex)
-        double angle = (m_p - 2) * PI / m_p;
-        m_vertices = sf::VertexArray();
-        m_vertices.setPrimitiveType(sf::Points);
-
-        //Grow(&m_vertices, m_centerX, m_centerY, 0.0, angle, 3);
-        Tesselate(300, angle);
-        std::cout << m_vertices.getVertexCount() << std::endl;
-    }
-
-    // Draws the lines on the diagram
-    sf::VertexArray lines = sf::VertexArray(sf::Lines, m_vertices.getVertexCount());
-    for(int iii = 0; iii < m_vertices.getVertexCount() - 1; iii += 2) {
-        lines[iii] = m_vertices[iii];
-        lines[iii + 1] = m_vertices[iii + 1];
-        lines[iii].color = sf::Color(((iii + 209) * 23432) % 255,
-                                     ((iii + 742) * 53320) % 255,
-                                     ((iii + 564) * 87914) % 255, 255);//sf::Color::White;
-        lines[iii + 1].color = sf::Color(((iii + 87) * 12345) % 255,
-                                       ((iii + 343) * 53240) % 255,
-                                       ((iii + 123) * 98765) % 255, 255);//sf::Color::White;
-    }
-    m_shape = lines;
-}
-
-void Diagram::Grow(sf::VertexArray* arr, int x, int y, double angle, double delta, int i){
-    if(i>0 && x>0 && y>0 && x<m_w->getSize().x && y<m_w->getSize().y/* && IsGood(arr,x,y)*/ ) { //if we are reasonably close
-        for(double ii = angle + delta; ii < angle + TAU; ii += delta) {
-            arr->append(sf::Vertex(sf::Vector2f(x, y)));
-            Grow(arr, x + m_scale * cos(angle + ii), y - m_scale * sin(angle + ii), angle + ii, delta, i - 1);
-            std::cout << "looping" << std::endl;
-        }
-    } else {
-        std::cout << "terminating" << std::endl;
-        //arr->append(sf::Vertex(sf::Vector2f(x, y)));
+        Tesselate();
     }
 }
 
-void Diagram::Tesselate(int i, double delta) {
-    m_vertices = sf::VertexArray(sf::Lines, 1);
-    m_vertices[0] = sf::Vertex(sf::Vector2f(m_centerX, m_centerY));
-    for(int iii = 0; iii < i; iii += 2) {
-        int x = m_vertices[iii].position.x, y = m_vertices[iii].position.y;
+void Diagram::CreatePoly() {
+    m_scale = 220;
+    m_shape = sf::VertexArray(sf::Lines, 2 * m_p);
+    // The initial angle (for the first vertex)
+    double angle = PI / 2 + (PI / m_p * ((m_p + 1) % 2));
+    // Calculate the location of each vertex
+    for(int iii = 0; iii < m_shape.getVertexCount() - 1; iii += 2) {
+        // Adds the vertices to the diagram
+        m_shape[iii].position = sf::Vector2f(m_centerX + cos(angle) * m_scale,
+                                             m_centerY - sin(angle) * m_scale);
+        angle += m_q * (TAU / m_p);
+        m_shape[iii + 1].position = sf::Vector2f(m_centerX + cos(angle) * m_scale,
+                                                 m_centerY - sin(angle) * m_scale);
+        angle -= (m_q - 1) * (TAU / m_p);
+        m_shape[iii].color = Colorgen(iii);
+        m_shape[iii + 1].color = Colorgen(iii + 1);
+    }
+}
+
+void Diagram::Tesselate() {
+    m_scale = 50; // smaller tessellations
+    m_shape = sf::VertexArray(sf::Lines, 0);
+    // The amount by which we rotate for the tessellation
+    double delta = (m_p - 2) * PI / m_p;
+    m_shape = sf::VertexArray(sf::Lines, 1);
+    m_shape[0] = sf::Vertex(sf::Vector2f(m_centerX, m_centerY));
+    m_shape[0].color = Colorgen(639);
+    bool
+    isFinished = false;
+    for(int iii = 0; iii < m_shape.getVertexCount(); iii += 2) {
+        int x = m_shape[iii].position.x, y = m_shape[iii].position.y;
         if(0 < x && x < m_w->getSize().x && 0 < y && y < m_w->getSize().y) {
-            m_vertices[m_vertices.getVertexCount() - 1] = m_vertices[iii];
+            m_shape[m_shape.getVertexCount() - 1] = m_shape[iii];
             double initAngle = 0;
             if(iii == 0)
                 initAngle = -delta;
             else {
-                if (x >= m_vertices[iii - 1].position.x) initAngle += PI;
-                initAngle += atan(-(m_vertices[iii].position.y - m_vertices[iii - 1].position.y) /
-                                  (m_vertices[iii].position.x - m_vertices[iii - 1].position.x));
+                initAngle += atan(-(m_shape[iii].position.y - m_shape[iii - 1].position.y) /
+                                   (m_shape[iii].position.x - m_shape[iii - 1].position.x));
+                if (x >= m_shape[iii - 1].position.x) initAngle += PI;
             }
-            while(initAngle >= TAU) initAngle -= TAU; // put in [0, TAU) if too large
-            std::cout << initAngle * 180/PI << ", " << iii << ", " << x << std::endl;
             for(double angle = initAngle; angle < TAU + initAngle; angle += delta) {
-                sf::Vertex vert = sf::Vertex(sf::Vector2f(m_vertices[iii].position.x + m_scale * cos(angle),
-                                                          m_vertices[iii].position.y - m_scale * sin(angle)));
+                sf::Vertex vert = sf::Vertex(sf::Vector2f(m_shape[iii].position.x + m_scale * cos(angle),
+                                                          m_shape[iii].position.y - m_scale * sin(angle)));
+                vert.color = Colorgen(m_shape.getVertexCount() - 1);
                 if(iii == 0) {
-                    m_vertices.append(vert);
-                    m_vertices.append(m_vertices[iii]);
+                    m_shape.append(vert);
+                    m_shape.append(m_shape[iii]);
                 }
-                else if(IsGood(vert, m_vertices[m_vertices.getVertexCount() - 1])) {
-                    m_vertices.append(vert);
-                    m_vertices.append(m_vertices[iii]);
+                else if(IsGood(vert, m_shape[m_shape.getVertexCount() - 1])) {
+                    m_shape.append(vert);
+                    m_shape.append(m_shape[iii]);
                 }
             }
         }
         if(iii == 0) iii--;
     }
-    m_vertices.resize(m_vertices.getVertexCount() - 1);
+    m_shape.resize(m_shape.getVertexCount() - 1);
+}
+
+// Generate the colors for the lines so it's not all white and boring
+sf::Color Diagram::Colorgen(int seed) {
+    int hue = ((seed + 23657) * 15274) % 360;
+    return HSVtoRGB(hue, 1, 1);
 }
 
 void Diagram::Draw() {
@@ -181,4 +159,34 @@ int ToInt(std::string str) {
         ret += pow(10, str.length() - 1 - i) * (str[i] - '0');
     }
     return ret;
+}
+
+// Convert HSV color values to RGB color values
+sf::Color HSVtoRGB(int hue, double sat, double val) {
+    hue %= 360;
+    while(hue < 0) hue += 360;
+
+    if(sat < 0) sat = 0.0;
+    if(sat > 1) sat = 1.0;
+
+    if(val < 0) val = 0.0;
+    if(val > 1) val = 1.0;
+
+    int h = hue / 60;
+    double f = double(hue) / 60 - h;
+    double p = val * (1 - sat);
+    double q = val * (1 - sat * f);
+    double t = val * (1 - sat * (1 - f));
+
+    switch(h)
+    {
+        default:
+        case 0:
+        case 6: return sf::Color(val * 255, t * 255, p * 255);
+        case 1: return sf::Color(q * 255, val * 255, p * 255);
+        case 2: return sf::Color(p * 255, val * 255, t * 255);
+        case 3: return sf::Color(p * 255, q * 255, val * 255);
+        case 4: return sf::Color(t * 255, p * 255, val * 255);
+        case 5: return sf::Color(val * 255, p * 255, q * 255);
+    }
 }
