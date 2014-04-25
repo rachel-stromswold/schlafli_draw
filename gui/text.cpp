@@ -4,7 +4,7 @@
 
 InputBox::InputBox(sf::RenderWindow* window, sf::Font font, int x, int y, int charWidth, int charHeight):
     m_stored(),
-    m_rectangle(sf::Vector2f(charWidth * 15, charHeight * 15))
+    m_rectangle(sf::Vector2f(charWidth, charHeight))
 {
     m_w = window;
     m_f = font;

@@ -19,7 +19,7 @@ private:
     sf::VertexArray m_shape;
 public:
     Diagram();
-    Diagram(sf::RenderWindow* window, int scale, int centerX, int centerY, std::string str = "");
+    Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string str = "");
 
     bool IsGood(sf::Vertex vert1, sf::Vertex vert2);
     void SetPQR(std::string str);

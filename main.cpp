@@ -10,9 +10,11 @@ int main() {
     sf::Font inFont;
     if(!inFont.loadFromFile("VeraMono.ttf")){/*error handling*/}
 
-    InputBox input = InputBox(&window, inFont, 5, 5, 10, 1);
-    Button but = Button(&window, inFont, 160, 5, 10, 1, "Click to Submit");
-    Diagram poly = Diagram(&window, 220, 300, 250);
+    InputBox input = InputBox(&window, inFont, 1, 1, window.getSize().x * .25, window.getSize().y * .035);
+    Button but = Button(&window, inFont, window.getSize().x * .25 + 6, 2, window.getSize().x * .25 ,
+                        window.getSize().y * .03, "Click to Submit");
+    Diagram poly = Diagram(&window, window.getSize().x / 2,
+                           (window.getSize().y - but.GetHeight()) / 2 + but.GetHeight());
 
     while (window.isOpen())
     {

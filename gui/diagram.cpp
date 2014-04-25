@@ -17,13 +17,13 @@ Diagram::Diagram() {
     m_centerY = 250;
 }
 
-Diagram::Diagram(sf::RenderWindow* window, int scale, int centerX, int centerY, std::string str) :
+Diagram::Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string str) :
     m_shape(sf::Lines, 0)
 {
     m_w = window;
     if (!str.empty())
         SetPQR(str);
-    m_scale = scale;
+    m_scale = 200;
     m_centerX = centerX;
     m_centerY = centerY;
 };
@@ -83,10 +83,10 @@ void Diagram::MakeDiagram(std::string str) {
 }
 
 void Diagram::CreatePoly() {
-    m_scale = 220;
+    m_scale = (m_w->getSize().y * .99) / 2.2; // Scale to window size
     m_shape = sf::VertexArray(sf::Lines, 2 * m_p);
     // The initial angle (for the first vertex)
-    double angle = PI / 2 + (PI / m_p * ((m_p + 1) % 2));
+    double angle = PI / 2 + (PI / m_p * ((m_p + 1) % 2)); // Ensure there is a flat line on the bottom
     // Calculate the location of each vertex
     for(int iii = 0; iii < m_shape.getVertexCount() - 1; iii += 2) {
         // Adds the vertices to the diagram

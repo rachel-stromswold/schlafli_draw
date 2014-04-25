@@ -4,7 +4,7 @@
 Button::Button(sf::RenderWindow* window, sf::Font font, int x, int y, int width, int height, std::string str) :
         m_text(),
         m_f(font),
-        m_rectangle(sf::Vector2f(width * 15, height * 15))
+        m_rectangle(sf::Vector2f(width, height))
 
 {
     m_w = window;
@@ -24,6 +24,9 @@ Button::Button(sf::RenderWindow* window, sf::Font font, int x, int y, int width,
     m_text.setPosition(x, y - 2);
 }
 
+double Button::GetHeight() {
+    return m_height;
+}
 
 void Button::Draw() {
     m_w->draw(m_rectangle);

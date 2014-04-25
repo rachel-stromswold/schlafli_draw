@@ -715,11 +715,11 @@
 	<math.h>
 	"diagram.h"
 
-1398208911 source:c:\users\devon\desktop\workspace\schlafli\gui\button.cpp
+1398459046 source:c:\users\devon\desktop\workspace\schlafli\gui\button.cpp
 	"button.h"
 	<iostream>
 
-1398208911 c:\users\devon\desktop\workspace\schlafli\gui\button.h
+1398459046 c:\users\devon\desktop\workspace\schlafli\gui\button.h
 	<SFML/Graphics.hpp>
 	<string>
 	"text.h"
@@ -728,23 +728,23 @@
 	<SFML/Graphics.hpp>
 	<string>
 
-1398457380 c:\users\devon\desktop\workspace\schlafli\gui\diagram.h
+1398457961 c:\users\devon\desktop\workspace\schlafli\gui\diagram.h
 	<SFML/Graphics.hpp>
 	<string>
 
-1398457380 source:c:\users\devon\desktop\workspace\schlafli\gui\diagram.cpp
+1398459536 source:c:\users\devon\desktop\workspace\schlafli\gui\diagram.cpp
 	<SFML/Graphics.hpp>
 	<string>
 	<iostream>
 	<math.h>
 	"diagram.h"
 
-1397569856 source:c:\users\devon\desktop\workspace\schlafli\gui\text.cpp
+1398458826 source:c:\users\devon\desktop\workspace\schlafli\gui\text.cpp
 	<SFML/Graphics.hpp>
 	<string>
 	"text.h"
 
-1398377804 source:c:\users\devon\desktop\workspace\schlafli\main.cpp
+1398459203 source:c:\users\devon\desktop\workspace\schlafli\main.cpp
 	<SFML/Graphics.hpp>
 	".\gui\text.h"
 	".\gui\button.h"
