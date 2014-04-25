@@ -29,9 +29,10 @@ Diagram::Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string
 };
 
 bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
-    if(m_shape.getVertexCount() == 0)
+    if(m_shape.getVertexCount() <= 1) // An empty set, or only one point, doesn't have any lines for us to overlap with
         return true;
-    for(int iii = 0; iii < m_shape.getVertexCount() - 1; iii += 2) {
+    for(int iii = 0; iii < m_shape.getVertexCount() - 1; iii += 2) { // Check all lines in m_shape
+        // Returns true if the two vertices appear in sequence anywhere in m_shape (not necessarily in order)
         if(m_shape[iii].position.x == vert1.position.x && m_shape[iii].position.y == vert1.position.y &&
            m_shape[iii + 1].position.x == vert2.position.x && m_shape[iii + 1].position.y == vert2.position.y ||
            m_shape[iii].position.x == vert2.position.x && m_shape[iii].position.y == vert2.position.y &&
@@ -44,7 +45,7 @@ bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
 }
 
 void Diagram::SetPQR(std::string str) {
-    m_p = 2;
+    m_p = 2; // Empty schlafli set = line segment
     m_q = 1;
     m_r = -1;
 
@@ -103,43 +104,35 @@ void Diagram::CreatePoly() {
 
 void Diagram::Tesselate() {
     m_scale = 50; // smaller tessellations
-    m_shape = sf::VertexArray(sf::Lines, 0);
-    // The amount by which we rotate for the tessellation
-    double delta = (m_p - 2) * PI / m_p;
     m_shape = sf::VertexArray(sf::Lines, 1);
-    m_shape[0] = sf::Vertex(sf::Vector2f(m_centerX, m_centerY));
-    m_shape[0].color = Colorgen(639);
-    bool
-    isFinished = false;
-    for(int iii = 0; iii < m_shape.getVertexCount(); iii += 2) {
-        int x = m_shape[iii].position.x, y = m_shape[iii].position.y;
-        if(0 < x && x < m_w->getSize().x && 0 < y && y < m_w->getSize().y) {
-            m_shape[m_shape.getVertexCount() - 1] = m_shape[iii];
+    double delta = (m_p - 2) * PI / m_p; // The amount by which we rotate for the tessellation
+    m_shape[0] = sf::Vertex(sf::Vector2f(m_centerX, m_centerY)); // Create our starting vertex at the center
+    m_shape[0].color = Colorgen(639); // Set starting color
+    for(int iii = 0; iii < m_shape.getVertexCount(); iii += 2) { // Go until all vertices are off screen
+        int x = m_shape[iii].position.x, y = m_shape[iii].position.y; // For ease of use
+        if(0 < x && x < m_w->getSize().x && 0 < y && y < m_w->getSize().y) { // False if the vertex is out of the window
+            m_shape[m_shape.getVertexCount() - 1] = m_shape[iii]; // Set the last vertex to the current center one
             double initAngle = 0;
-            if(iii == 0)
-                initAngle = -delta;
-            else {
+            if(iii != 0) { // First run doesn't have any lines to work from, so just start with 0
+                // Set our initial angle to be that of the line we came on, so that we draw lines relative to that
                 initAngle += atan(-(m_shape[iii].position.y - m_shape[iii - 1].position.y) /
                                    (m_shape[iii].position.x - m_shape[iii - 1].position.x));
-                if (x >= m_shape[iii - 1].position.x) initAngle += PI;
+                if (x >= m_shape[iii - 1].position.x) initAngle += PI; // Compensate for the restricted range of atan
             }
             for(double angle = initAngle; angle < TAU + initAngle; angle += delta) {
+                // Create the next vertex
                 sf::Vertex vert = sf::Vertex(sf::Vector2f(m_shape[iii].position.x + m_scale * cos(angle),
                                                           m_shape[iii].position.y - m_scale * sin(angle)));
-                vert.color = Colorgen(m_shape.getVertexCount() - 1);
-                if(iii == 0) {
-                    m_shape.append(vert);
-                    m_shape.append(m_shape[iii]);
-                }
-                else if(IsGood(vert, m_shape[m_shape.getVertexCount() - 1])) {
-                    m_shape.append(vert);
-                    m_shape.append(m_shape[iii]);
+                vert.color = Colorgen(m_shape.getVertexCount() - 1); // Set the color
+                if(IsGood(vert, m_shape[m_shape.getVertexCount() - 1])) { // Don't draw over existing lines
+                    m_shape.append(vert); // Add the vertex (completes a line with the center vertex)
+                    m_shape.append(m_shape[iii]); // Add the center vertex again to begin more lines
                 }
             }
         }
-        if(iii == 0) iii--;
+        if(iii == 0) iii--; // Want to only deal with odd-numbered vertices after first run
     }
-    m_shape.resize(m_shape.getVertexCount() - 1);
+    m_shape.resize(m_shape.getVertexCount() - 1); // Remove the last vertex, since we have one too many
 }
 
 // Generate the colors for the lines so it's not all white and boring
