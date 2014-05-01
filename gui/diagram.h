@@ -9,6 +9,8 @@ private:
     int m_p;
     int m_q;
     int m_r;
+    bool m_tess=false;
+
 
     int m_scale;
     int m_centerX;
@@ -22,11 +24,13 @@ public:
     Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string str = "");
 
     bool IsGood(sf::Vertex vert1, sf::Vertex vert2);
+    //bool CanAdd(int x, int y, sf::VertexArray arr);
     void SetPQR(std::string str);
 
     void MakeDiagram(std::string str = "");
     void CreatePoly();
     void Tesselate();
+    void CreateNet(int scale);
 
     sf::Color Colorgen(int seed);
     void Draw();

@@ -7,6 +7,14 @@
 #define PI (atan(1) * 4)
 #define TAU (2 * PI)
 
+#define TET_PHI 19.471220333
+#define CUBE_PHI 35.264391
+#define OCT_PHI 0.0
+#define ICO_PHI 26.56505
+#define DOD_PHIA 52.62263590
+#define DOD_PHIB 10.81231754
+//TODO: find how to actually calculate these values
+
 Diagram::Diagram() {
     m_p = 2;
     m_q = 1;
@@ -18,8 +26,7 @@ Diagram::Diagram() {
 }
 
 Diagram::Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string str) :
-    m_shape(sf::Lines, 0)
-{
+    m_shape(sf::Lines, 0){
     m_w = window;
     if (!str.empty())
         SetPQR(str);
@@ -44,6 +51,14 @@ bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
     return true;
 }
 
+/*bool Diagram::CanAdd(int x, int y, int z, int[] arr, int len){
+    for(int i=0;i<len;i+=3){
+        if(x==arr[i] && y==arr[i+1] && z==arr[i+2])
+            return false;
+    }
+    return true;
+}*/
+
 void Diagram::SetPQR(std::string str) {
     m_p = 2; // Empty schlafli set = line segment
     m_q = 1;
@@ -63,8 +78,8 @@ void Diagram::SetPQR(std::string str) {
         m_r = ToInt(str.substr(str.find(',') + 1, std::string::npos));
 
         //(p-2)*180/p is the interior angle of 1 vertex on the regular shape
-        if(m_r * ((m_p - 2) * 180 / m_p) != 360){
-            m_r = -1;
+        if(m_r * ((m_p - 2) * 180 / m_p) == 360){
+            m_tess = true;
         }
     } else {
         m_p = ToInt(str);
@@ -78,8 +93,11 @@ void Diagram::MakeDiagram(std::string str) {
 
     if(m_r == -1) {
         CreatePoly();
-    } else { // r > 0
+    } else if(m_tess){ // r > 0
         Tesselate();
+    } else {
+        //int arr[-2/(m_q/2-m_q/m_p-1)];
+        CreateNet(1);
     }
 }
 
@@ -133,6 +151,53 @@ void Diagram::Tesselate() {
         if(iii == 0) iii--; // Want to only deal with odd-numbered vertices after first run
     }
     m_shape.resize(m_shape.getVertexCount() - 1); // Remove the last vertex, since we have one too many
+}
+
+void Diagram::CreateNet(int scale) {
+    int loops=m_q-1;//usually this works except for the dodecohedron
+
+    double phi=0.0;
+    double ang=0.0;
+    double theta=0.0;
+
+    double x=0;
+    double y=0;
+    double z=0;
+
+    //TODO: actually find a formula for these values
+    switch(2/(m_p/m_q - m_p/2 + 1)){
+    case 4:
+        phi=TET_PHI;
+        break;
+    case 6:
+        phi=CUBE_PHI;
+        break;
+    case 8:
+        phi=OCT_PHI;
+        break;
+    case 20:
+        phi=ICO_PHI;
+        break;
+    default:
+        break;
+    }
+
+    if(m_p==5){//the dodecahedron is a special and very annoying case
+        loops=4;//for the dodecahedron
+    }else{
+        for(double i=PI/2;i>=0;i-=PI/2/loops){
+            ang=(0.99+cos(i))*ICO_PHI;
+            for(int j=0;j<11;j++){
+                x=scale*cos(theta)*cos(ang);
+                y=scale*sin(theta)*cos(ang);
+                z=scale*sin(ang);
+                std::cout<<x<<std::endl;
+                std::cout<<y<<std::endl;
+                std::cout<<z<<std::endl;
+                std::cout<<std::endl;
+            }
+        }
+    }
 }
 
 // Generate the colors for the lines so it's not all white and boring
