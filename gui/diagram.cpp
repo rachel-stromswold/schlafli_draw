@@ -87,12 +87,12 @@ void Diagram::SetPQR(std::string str) {
     }
 }
 
-void Diagram::MakeDiagram(std::string str) {
+void Diagram::MakePoly(std::string str) {
     if(str != "")
         SetPQR(str);
 
     if(m_r == -1) {
-        CreatePoly();
+        MakeDiagram();
     } else if(m_tess){ // r > 0
         Tesselate();
     } else {
@@ -101,7 +101,7 @@ void Diagram::MakeDiagram(std::string str) {
     }
 }
 
-void Diagram::CreatePoly() {
+void Diagram::MakeDiagram() {
     m_scale = (m_w->getSize().y * .99) / 2.2; // Scale to window size
     m_shape = sf::VertexArray(sf::Lines, 2 * m_p);
     // The initial angle (for the first vertex)

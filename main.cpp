@@ -33,7 +33,7 @@ int main() {
                         event.key.code == sf::Keyboard::Return))
             {
                 poly.SetPQR(input.GetStoredString());
-                poly.MakeDiagram();
+                poly.MakePoly();
             }
         }
 

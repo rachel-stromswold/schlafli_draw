@@ -27,8 +27,8 @@ public:
     //bool CanAdd(int x, int y, sf::VertexArray arr);
     void SetPQR(std::string str);
 
-    void MakeDiagram(std::string str = "");
-    void CreatePoly();
+    void MakePoly(std::string str = "");
+    void MakeDiagram();
     void Tesselate();
     void CreateNet(int scale);
 
