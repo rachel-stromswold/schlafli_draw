@@ -723,11 +723,12 @@
 	<SFML/Graphics.hpp>
 	<string>
 
-1398979940 c:\users\devon\desktop\workspace\schlafli\gui\diagram.h
+1398980752 c:\users\devon\desktop\workspace\schlafli\gui\diagram.h
+	<SFML/OpenGL.hpp>
 	<SFML/Graphics.hpp>
 	<string>
 
-1398979926 source:c:\users\devon\desktop\workspace\schlafli\gui\diagram.cpp
+1398982665 source:c:\users\devon\desktop\workspace\schlafli\gui\diagram.cpp
 	<SFML/Graphics.hpp>
 	<string>
 	<iostream>
@@ -745,4 +746,14 @@
 	".\gui\button.h"
 	".\gui\diagram.h"
 	<iostream>
+
+1397250415 c:\sfml-2.1\include\sfml\opengl.hpp
+	<SFML/Config.hpp>
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+	<GL/gl.h>
+	<GL/glu.h>
+	<OpenGL/gl.h>
+	<OpenGL/glu.h>
 

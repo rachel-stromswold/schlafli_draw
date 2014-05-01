@@ -63,28 +63,39 @@ void Diagram::SetPQR(std::string str) {
     m_p = 2; // Empty schlafli set = line segment
     m_q = 1;
     m_r = -1;
+    m_s = -1;
 
     if(str == "") return;
 
-    if(str.find('{') != std::string::npos && str.rfind('}') != std::string::npos) { //if both { and } are present
-        str = str.substr(str.find('{') + 1, str.rfind('}') - str.find('{') - 1);
+    if(str.find('{') != std::string::npos) {  // If '{' is present
+        str = str.substr(str.find('{') + 1, str.length() - 1); // Edit the string to remove it
+    }
+    if(str.find('}') != std::string::npos) {  // If '}'
+        str = str.substr(0, str.find('}')); // Edit the string to remove it
     }
 
-    if(str.find('/') != std::string::npos) {
-        m_p = ToInt(str.substr(0, str.find('/')));
-        m_q = ToInt(str.substr(str.find('/') + 1, std::string::npos));
-    } else if(str.find(',') != std::string::npos) {
-        m_p = ToInt(str.substr(0, str.find(',')));
-        m_r = ToInt(str.substr(str.find(',') + 1, std::string::npos));
-
+    std::string pqStr = str.substr(0, str.find(',')); // Look only up until the first comma, if there is one
+    if(pqStr.find('/') != std::string::npos) { // If there's a slash, we need to set both p and q
+        m_p = ToInt(pqStr.substr(0, pqStr.find('/')));
+        m_q = ToInt(pqStr.substr(pqStr.find('/') + 1, std::string::npos));
+    } else { // Otherwise, we can just set p
+            m_p = ToInt(pqStr); // No commas, slashes or braces, so the string is just p
+    }
+    if(str.find(',') != std::string::npos) { // There's a comma, so we'll have to at least set r as well
+        str = str.substr(str.find(',') + 1, std::string::npos); // Look only past the first comma
+        if(str.find('/') != std::string::npos) { // There's a slash in the second part
+            m_r = ToInt(str.substr(0, str.find('/')));
+            m_s = ToInt(str.substr(str.find('/') + 1, std::string::npos));
+        } else { // No slash present
+            m_r = ToInt(str);
+        }
+    }
         //(p-2)*180/p is the interior angle of 1 vertex on the regular shape
         if(m_r * ((m_p - 2) * 180 / m_p) == 360){
-            m_tess = true;
+            m_tess = true; // This is a tesselation of a plane
+        } else {
+            m_tess = false;
         }
-    } else {
-        m_p = ToInt(str);
-        m_q = 1;
-    }
 }
 
 void Diagram::MakePoly(std::string str) {
