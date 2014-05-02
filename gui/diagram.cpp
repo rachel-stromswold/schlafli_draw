@@ -19,6 +19,7 @@ Diagram::Diagram() {
     m_p = 2;
     m_q = 1;
     m_r = -1;
+    m_s = -1;
 
     m_scale = 220;
     m_centerX = 300;
@@ -52,13 +53,16 @@ bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
     return true;
 }
 
-/*bool Diagram::CanAdd(int x, int y, int z, int[] arr, int len){
-    for(int i=0;i<len;i+=3){
-        if(x==arr[i] && y==arr[i+1] && z==arr[i+2])
-            return false;
+bool Diagram::CanAdd(int x, int y, int z, double * arr, int len){
+    for(int i=0;i+2<len;i+=3){
+        if(x>arr[i]-.001 && x<arr[i]
+            && y>arr[i+1]-.001 && y<arr[i+1]+.001
+            && z>arr[i+2]-.001 && z<arr[i+2]+.001 ){
+                return false;
+        }
     }
     return true;
-}*/
+}
 
 void Diagram::SetPQR(std::string str) {
     m_p = 2; // Empty schlafli set = line segment
@@ -93,7 +97,7 @@ void Diagram::SetPQR(std::string str) {
     }
         //(p-2)*180/p is the interior angle of 1 vertex on the regular shape
         if(m_r * ((m_p - 2) * 180 / m_p) == 360){
-            m_tess = true; // This is a tesselation of a plane
+            m_tess = true; // This is a tessellation of a plane
         } else {
             m_tess = false;
         }
@@ -102,14 +106,14 @@ void Diagram::SetPQR(std::string str) {
 void Diagram::MakePoly(std::string str) {
     if(str != "")
         SetPQR(str);
-
     if(m_r == -1) { // 2D Polygon
         MakeDiagram();
     } else if(m_tess){ // 2D tessellation
         Tessellate();
     } else { // 3D Polytope
-        //int arr[-2/(m_q/2-m_q/m_p-1)];
-        CreateNet(1);
+        double l=-2/((double)(m_r)/2-(double)(m_r)/(double)(m_p)-1);
+        double verts[3*(int)l];//3 times the number of needed verts
+        CreateNet(10,verts,3*(int)l);
         //MakeSolid();
     }
 }
@@ -166,8 +170,10 @@ void Diagram::Tessellate() {
     m_shape.resize(m_shape.getVertexCount() - 1); // Remove the last vertex, since we have one too many
 }
 
-void Diagram::CreateNet(int scale) {
-    int loops=m_q-1;//usually this works except for the dodecohedron
+void Diagram::CreateNet(int scale, double * arr, int len) {
+    int loops=m_r-1;//usually this works except for the dodecohedron
+
+    int ii=0;
 
     double phi=0.0;
     double ang=0.0;
@@ -197,16 +203,26 @@ void Diagram::CreateNet(int scale) {
     if(m_p==5){//the dodecahedron is a special and very annoying case
         loops=4;//for the dodecahedron
     }else{
-        for(double i=PI/2;i>=0;i-=PI/2/loops){
-            ang=(0.99+cos(i))*ICO_PHI;
+        for(double i=PI/2;i>=0;i-=PI/(2*loops)){
+            ang=(double)((int)(0.99+cos(i)))*ICO_PHI;
+            //std::cout<<ang<<std::endl;
+            //std::cout<<std::endl;
+            theta=0;
             for(int j=0;j<11;j++){
                 x=scale*cos(theta)*cos(ang);
                 y=scale*sin(theta)*cos(ang);
                 z=scale*sin(ang);
-                std::cout<<x<<std::endl;
-                std::cout<<y<<std::endl;
-                std::cout<<z<<std::endl;
-                std::cout<<std::endl;
+                if(CanAdd(x,y,z,arr,len) && ii+2<len){
+                    arr[ii]=x;
+                    std::cout<<x<<std::endl;
+                    arr[ii+1]=y;
+                    std::cout<<y<<std::endl;
+                    arr[ii+2]=z;
+                    std::cout<<z<<std::endl;
+                    std::cout<<std::endl;
+                    ii+=3;
+                }
+                theta+=TAU/(m_p);//increments the angle by the proper amount
             }
         }
     }
