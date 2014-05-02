@@ -723,12 +723,12 @@
 	<SFML/Graphics.hpp>
 	<string>
 
-1398980752 c:\users\devon\desktop\workspace\schlafli\gui\diagram.h
-	<SFML/OpenGL.hpp>
+1399004403 c:\users\devon\desktop\workspace\schlafli\gui\diagram.h
+	<GL/glut.h>
 	<SFML/Graphics.hpp>
 	<string>
 
-1398982665 source:c:\users\devon\desktop\workspace\schlafli\gui\diagram.cpp
+1399004508 source:c:\users\devon\desktop\workspace\schlafli\gui\diagram.cpp
 	<SFML/Graphics.hpp>
 	<string>
 	<iostream>
@@ -740,7 +740,7 @@
 	<string>
 	"text.h"
 
-1398979873 source:c:\users\devon\desktop\workspace\schlafli\main.cpp
+1399004600 source:c:\users\devon\desktop\workspace\schlafli\main.cpp
 	<SFML/Graphics.hpp>
 	".\gui\text.h"
 	".\gui\button.h"
@@ -756,4 +756,20 @@
 	<GL/glu.h>
 	<OpenGL/gl.h>
 	<OpenGL/glu.h>
+
+902940872 c:\glut-3.7\include\gl\glut.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1399002916 c:\freeglut-2.8.1\include\gl\glut.h
+	"freeglut_std.h"
+
+1399002916 c:\freeglut-2.8.1\include\gl\freeglut_std.h
+	<windows.h>
+	<OpenGL/gl.h>
+	<OpenGL/glu.h>
+	<GL/gl.h>
+	<GL/glu.h>
+	<stdlib.h>
 

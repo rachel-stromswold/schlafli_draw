@@ -23,6 +23,7 @@ Diagram::Diagram() {
     m_scale = 220;
     m_centerX = 300;
     m_centerY = 250;
+    m_centerZ = 0;
 }
 
 Diagram::Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string str) :
@@ -102,13 +103,14 @@ void Diagram::MakePoly(std::string str) {
     if(str != "")
         SetPQR(str);
 
-    if(m_r == -1) {
+    if(m_r == -1) { // 2D Polygon
         MakeDiagram();
-    } else if(m_tess){ // r > 0
-        Tesselate();
-    } else {
+    } else if(m_tess){ // 2D tessellation
+        Tessellate();
+    } else { // 3D Polytope
         //int arr[-2/(m_q/2-m_q/m_p-1)];
         CreateNet(1);
+        //MakeSolid();
     }
 }
 
@@ -131,7 +133,7 @@ void Diagram::MakeDiagram() {
     }
 }
 
-void Diagram::Tesselate() {
+void Diagram::Tessellate() {
     m_scale = 50; // smaller tessellations
     m_shape = sf::VertexArray(sf::Lines, 1);
     double delta = (m_p - 2) * PI / m_p; // The amount by which we rotate for the tessellation
@@ -192,7 +194,6 @@ void Diagram::CreateNet(int scale) {
     default:
         break;
     }
-
     if(m_p==5){//the dodecahedron is a special and very annoying case
         loops=4;//for the dodecahedron
     }else{
@@ -209,6 +210,18 @@ void Diagram::CreateNet(int scale) {
             }
         }
     }
+}
+
+void Diagram::MakeSolid() {
+    /* Strategy:
+        Starting with one vertex, draw the vertex figure.
+            Extend the lines so that the ends are equidistant from the center
+        Connect the appropriate lines to form triangular faces
+        From each new vertex, repeat until done
+            Check each time to ensure you're not drawing over an existing edge
+            Ensure that the orientation is correct; the place of the vertex figure should be perpendicular to
+                the line through its vertex and the center
+    */
 }
 
 // Generate the colors for the lines so it's not all white and boring

@@ -1,7 +1,7 @@
 #ifndef DIAGRAM_H
 #define DIAGRAM_H
 
-#include <SFML/OpenGL.hpp>
+#include <GL/glut.h>
 #include <SFML/Graphics.hpp>
 #include <string>
 
@@ -31,8 +31,9 @@ public:
 
     void MakePoly(std::string str = "");
     void MakeDiagram();
-    void Tesselate();
+    void Tessellate();
     void CreateNet(int scale);
+    void MakeSolid();
 
     sf::Color Colorgen(int seed);
     void Draw();
