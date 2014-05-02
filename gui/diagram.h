@@ -1,7 +1,6 @@
 #ifndef DIAGRAM_H
 #define DIAGRAM_H
 
-#include <SFML/OpenGL.hpp>
 #include <SFML/Graphics.hpp>
 #include <string>
 
@@ -10,13 +9,12 @@ private:
     int m_p;
     int m_q;
     int m_r;
-    int m_s;
     bool m_tess=false;
+
 
     int m_scale;
     int m_centerX;
     int m_centerY;
-    int m_centerZ;
 
     sf::RenderWindow* m_w;
 
@@ -26,13 +24,13 @@ public:
     Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string str = "");
 
     bool IsGood(sf::Vertex vert1, sf::Vertex vert2);
-    //bool CanAdd(int x, int y, sf::VertexArray arr);
+    bool CanAdd(int x, int y, int z, double * arr, int len);
     void SetPQR(std::string  str); // Sets p, q, r, and s
 
-    void MakePoly(std::string str = "");
-    void MakeDiagram();
+    void MakeDiagram(std::string str = "");
+    void CreatePoly();
     void Tesselate();
-    void CreateNet(int scale);
+    void CreateNet(int scale, double * arr, int len);
 
     sf::Color Colorgen(int seed);
     void Draw();
