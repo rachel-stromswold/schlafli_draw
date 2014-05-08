@@ -111,9 +111,9 @@ void Diagram::MakePoly(std::string str) {
     } else if(m_tess){ // 2D tessellation
         Tessellate();
     } else { // 3D Polytope
-        double l=-2/((double)(m_r)/2-(double)(m_r)/(double)(m_p)-1);
+        /*double l=-2/((double)(m_r)/2-(double)(m_r)/(double)(m_p)-1); // Sam Stuff
         double verts[3*(int)l];//3 times the number of needed verts
-        CreateNet(10,verts,3*(int)l);
+        CreateNet(10,verts,3*(int)l);*/
         //MakeSolid();
     }
 }

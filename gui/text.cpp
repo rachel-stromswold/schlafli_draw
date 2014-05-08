@@ -14,7 +14,7 @@ InputBox::InputBox(sf::RenderWindow* window, sf::Font font, int x, int y, int ch
     m_height = charHeight;
     m_isFocused = false;
 
-    m_stored.setString("");
+    m_stored.setString("{}");
     m_stored.setFont(m_f);
     m_stored.setCharacterSize(15);
     m_stored.setColor(sf::Color::Black);
@@ -31,14 +31,12 @@ void InputBox::Draw() {
 }
 
 void InputBox::EnterText(char n) {
-    if(n != 8 && n != 13 && n < 128) {
-        m_stored.setString(m_stored.getString() + n);
-    } else if(n == 8) {
-        std::string temp = m_stored.getString();
-        if(temp.length() > 0)
-            m_stored.setString(temp.substr(0, temp.length() - 1));
-    } else if(n == 13) {
-        //do whatever we do when people hit enter
+    std::string temp = m_stored.getString();
+    if(n != 8 && n != 13 && n < 128) { // Some character
+        m_stored.setString(temp.substr(0, temp.length() - 1) + n + '}');
+    } else if(n == 8) { // Backspace
+        if(temp.length() > 2)
+            m_stored.setString(temp.substr(0, temp.length() - 2) + '}');
     }
 }
 
