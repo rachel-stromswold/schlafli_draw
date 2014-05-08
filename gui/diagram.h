@@ -29,6 +29,7 @@ public:
     bool IsGood(sf::Vertex vert1, sf::Vertex vert2);
     bool CanAdd(int x, int y, int z, double * arr, int len);
     void SetPQR(std::string  str); // Sets p, q, r, and s
+    double GetAngle(); // Returns the "bend angle" for polyhedra
 
     void MakePoly(std::string str = "");
     void MakeDiagram();

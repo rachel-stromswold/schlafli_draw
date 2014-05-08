@@ -103,6 +103,18 @@ void Diagram::SetPQR(std::string str) {
         }
 }
 
+double Diagram::GetAngle() {
+    if(m_q <= 1 && m_s <= 1) { // No slashes
+        std::cout << "Te1st" << std::endl;
+        double thetaFace = (m_p - 2) * PI / m_p; // Interior angle of the polygon forming the face
+        double thetaVertex = TAU / m_r; // Interior angle of the vertex figure
+        std::cout << thetaFace << ", " << thetaVertex << std::endl;
+        double theta = asin(sqrt((1-cos(thetaFace))/(1-cos(thetaVertex))));
+        return theta;
+    }
+    else return -1; // Don't have a formula for the others yet :( (The above also works for Great Dodecahedron, though)
+}
+
 void Diagram::MakePoly(std::string str) {
     if(str != "")
         SetPQR(str);
@@ -114,7 +126,7 @@ void Diagram::MakePoly(std::string str) {
         /*double l=-2/((double)(m_r)/2-(double)(m_r)/(double)(m_p)-1); // Sam Stuff
         double verts[3*(int)l];//3 times the number of needed verts
         CreateNet(10,verts,3*(int)l);*/
-        //MakeSolid();
+        MakeSolid();
     }
 }
 
@@ -238,6 +250,8 @@ void Diagram::MakeSolid() {
             Ensure that the orientation is correct; the place of the vertex figure should be perpendicular to
                 the line through its vertex and the center
     */
+    double theta = GetAngle();
+    std::cout << theta * 180 / PI << std::endl;
 }
 
 // Generate the colors for the lines so it's not all white and boring
