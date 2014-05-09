@@ -111,10 +111,14 @@ double Diagram::GetAngle() {
         double thetaFace = (m_p - 2 * m_q) * PI / m_p; // Interior angle of the polygon forming the face
         double thetaVertex = TAU / m_r; // Interior angle of the vertex figure
         std::cout << thetaFace * 180/PI << ", " << thetaVertex * 180/PI << std::endl;
-        double theta = asin(sqrt((1-cos(thetaFace))/(1-cos(thetaVertex))));
+        double theta = asin(sqrt((1 - cos(thetaFace)) / (1 - cos(thetaVertex))));
         return theta;
     } else {
-        return -1;
+        double thetaFace = (m_p - 2 * m_q) * PI / m_p; // Interior angle of the polygon forming the face
+        double thetaVertex = TAU / m_r; // Interior angle of the vertex figure
+        std::cout << thetaFace * 180/PI << ", " << thetaVertex * 180/PI << std::endl;
+        double theta = asin(sqrt((1 - cos(thetaFace)) / 2) / sin(thetaVertex));
+        return theta;
     }
     return -1; // Don't have a formula for the others yet :( (The above also works for Great Dodecahedron, though)
 }
