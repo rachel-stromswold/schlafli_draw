@@ -72,10 +72,10 @@ void Diagram::SetPQR(std::string str) {
 
     if(str == "") return;
 
-    if(str.find('{') != std::string::npos) {  // If '{' is present
+    if(str.find('{') != std::string::npos) {  // If '{' is present (which it should be)
         str = str.substr(str.find('{') + 1, str.length() - 1); // Edit the string to remove it
     }
-    if(str.find('}') != std::string::npos) {  // If '}'
+    if(str.find('}') != std::string::npos) {  // If '}' is present (which it also should be)
         str = str.substr(0, str.find('}')); // Edit the string to remove it
     }
 
@@ -95,24 +95,28 @@ void Diagram::SetPQR(std::string str) {
             m_r = ToInt(str);
         }
     }
-        //(p-2)*180/p is the interior angle of 1 vertex on the regular shape
-        if(m_r * ((m_p - 2) * 180 / m_p) == 360){
-            m_tess = true; // This is a tessellation of a plane
-        } else {
-            m_tess = false;
-        }
+
+    while(m_q > m_p / 2) m_q = abs(m_p - m_q); // Put q in (1, p/2) for convenience
+
+    //(p-2)*180/p is the interior angle of 1 vertex on the regular shape
+    if(m_r * ((m_p - 2) * 180 / m_p) == 360){
+        m_tess = true; // This is a tessellation of a plane
+    } else {
+        m_tess = false;
+    }
 }
 
 double Diagram::GetAngle() {
-    if(m_q <= 1 && m_s <= 1) { // No slashes
-        std::cout << "Te1st" << std::endl;
-        double thetaFace = (m_p - 2) * PI / m_p; // Interior angle of the polygon forming the face
+    if(m_s <= 1) { // The second number doesn't have a slash
+        double thetaFace = (m_p - 2 * m_q) * PI / m_p; // Interior angle of the polygon forming the face
         double thetaVertex = TAU / m_r; // Interior angle of the vertex figure
-        std::cout << thetaFace << ", " << thetaVertex << std::endl;
+        std::cout << thetaFace * 180/PI << ", " << thetaVertex * 180/PI << std::endl;
         double theta = asin(sqrt((1-cos(thetaFace))/(1-cos(thetaVertex))));
         return theta;
+    } else {
+        return -1;
     }
-    else return -1; // Don't have a formula for the others yet :( (The above also works for Great Dodecahedron, though)
+    return -1; // Don't have a formula for the others yet :( (The above also works for Great Dodecahedron, though)
 }
 
 void Diagram::MakePoly(std::string str) {
