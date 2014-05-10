@@ -22,19 +22,16 @@ Diagram::Diagram() {
     m_s = -1;
 
     m_scale = 220;
-    m_centerX = 300;
-    m_centerY = 250;
-    m_centerZ = 0;
+    m_center = sf::Vector3f(300, 250, 0);
 }
 
 Diagram::Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string str) :
-    m_shape(sf::Lines, 0){
+    m_shape(sf::Lines, 0),
+    m_center(centerX, centerY, 0) {
     m_w = window;
     if (!str.empty())
         SetPQR(str);
     m_scale = 200;
-    m_centerX = centerX;
-    m_centerY = centerY;
 };
 
 bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
@@ -68,9 +65,7 @@ void Diagram::SetPQR(std::string str) {
     m_p = 2; // Empty schlafli set = line segment
     m_q = 1;
     m_r = -1;
-    m_s = -1;
-
-    if(str == "") return;
+    m_s = 1;
 
     if(str.find('{') != std::string::npos) {  // If '{' is present (which it should be)
         str = str.substr(str.find('{') + 1, str.length() - 1); // Edit the string to remove it
@@ -78,6 +73,8 @@ void Diagram::SetPQR(std::string str) {
     if(str.find('}') != std::string::npos) {  // If '}' is present (which it also should be)
         str = str.substr(0, str.find('}')); // Edit the string to remove it
     }
+
+    if(str == "") return;
 
     std::string pqStr = str.substr(0, str.find(',')); // Look only up until the first comma, if there is one
     if(pqStr.find('/') != std::string::npos) { // If there's a slash, we need to set both p and q
@@ -107,20 +104,13 @@ void Diagram::SetPQR(std::string str) {
 }
 
 double Diagram::GetAngle() {
+    double thetaFace = (m_p - 2 * m_q) * PI / m_p; // Interior angle of the polygon forming the face
+    double thetaVertex = TAU / m_r; // Interior angle of the vertex figure
     if(m_s <= 1) { // The second number doesn't have a slash
-        double thetaFace = (m_p - 2 * m_q) * PI / m_p; // Interior angle of the polygon forming the face
-        double thetaVertex = TAU / m_r; // Interior angle of the vertex figure
-        std::cout << thetaFace * 180/PI << ", " << thetaVertex * 180/PI << std::endl;
-        double theta = asin(sqrt((1 - cos(thetaFace)) / (1 - cos(thetaVertex))));
-        return theta;
+        return asin(sqrt((1 - cos(thetaFace)) / (1 - cos(thetaVertex))));
     } else {
-        double thetaFace = (m_p - 2 * m_q) * PI / m_p; // Interior angle of the polygon forming the face
-        double thetaVertex = TAU / m_r; // Interior angle of the vertex figure
-        std::cout << thetaFace * 180/PI << ", " << thetaVertex * 180/PI << std::endl;
-        double theta = asin(sqrt((1 - cos(thetaFace)) / 2) / sin(thetaVertex));
-        return theta;
+        return asin(sqrt((1 - cos(thetaFace)) / 2) / sin(thetaVertex));
     }
-    return -1; // Don't have a formula for the others yet :( (The above also works for Great Dodecahedron, though)
 }
 
 void Diagram::MakePoly(std::string str) {
@@ -146,11 +136,11 @@ void Diagram::MakeDiagram() {
     // Calculate the location of each vertex
     for(int iii = 0; iii < m_shape.getVertexCount() - 1; iii += 2) {
         // Adds the vertices to the diagram
-        m_shape[iii].position = sf::Vector2f(m_centerX + cos(angle) * m_scale,
-                                             m_centerY - sin(angle) * m_scale);
+        m_shape[iii].position = sf::Vector2f(m_center.x + cos(angle) * m_scale,
+                                             m_center.y - sin(angle) * m_scale);
         angle += m_q * (TAU / m_p);
-        m_shape[iii + 1].position = sf::Vector2f(m_centerX + cos(angle) * m_scale,
-                                                 m_centerY - sin(angle) * m_scale);
+        m_shape[iii + 1].position = sf::Vector2f(m_center.x + cos(angle) * m_scale,
+                                                 m_center.y - sin(angle) * m_scale);
         angle -= (m_q - 1) * (TAU / m_p);
         m_shape[iii].color = Colorgen(iii);
         m_shape[iii + 1].color = Colorgen(iii + 1);
@@ -161,7 +151,7 @@ void Diagram::Tessellate() {
     m_scale = 50; // smaller tessellations
     m_shape = sf::VertexArray(sf::Lines, 1);
     double delta = (m_p - 2) * PI / m_p; // The amount by which we rotate for the tessellation
-    m_shape[0] = sf::Vertex(sf::Vector2f(m_centerX, m_centerY)); // Create our starting vertex at the center
+    m_shape[0] = sf::Vertex(sf::Vector2f(m_center.x, m_center.y)); // Create our starting vertex at the center
     m_shape[0].color = Colorgen(639); // Set starting color
     for(int iii = 0; iii < m_shape.getVertexCount(); iii += 2) { // Go until all vertices are off screen
         int x = m_shape[iii].position.x, y = m_shape[iii].position.y; // For ease of use
@@ -258,8 +248,36 @@ void Diagram::MakeSolid() {
             Ensure that the orientation is correct; the place of the vertex figure should be perpendicular to
                 the line through its vertex and the center
     */
-    double theta = GetAngle();
-    std::cout << theta * 180 / PI << std::endl;
+    m_scale = 100; //TODO: replace dummy value
+    double theta = GetAngle();  // Calculate our deflection (polar) angle
+    double phi = 0;             // The azimuth angle; start at 0 for simplicity's sake
+    double length = 2 * m_scale * cos(theta); // How long each side is
+    std::vector<sf::Vector3f> vertices = std::vector<sf::Vector3f>(2);
+    vertices[0] = sf::Vector3f(m_center.x + m_scale, m_center.y, m_center.z); // Starting with a point on the sphere
+    vertices[1] = sf::Vector3f(vertices[0].x + length * cos(PI - theta),      // First edge to be created
+                               vertices[0].y,
+                               vertices[0].z + length * sin(theta));
+
+    for(int iii = 1; iii < 7; iii += 2) { // Main loop for creating the other edges
+        theta = acos((vertices[iii].z - vertices[iii - 1].z) / length);
+        double phi_naught = atan2(vertices[iii].y - vertices[iii - 1].y, vertices[iii].x - vertices[iii - 1].x);
+        std::cout << theta << ", " << phi_naught << "\n";
+
+        for(phi = phi_naught; phi < TAU * m_s + phi_naught; phi += TAU / m_r) {
+            vertices.push_back(vertices[iii]);
+            vertices.push_back(sf::Vector3f(vertices[iii].x + length * cos(theta) * sin(phi),
+                                            vertices[iii].y + length * sin(theta) * cos(phi),
+                                            vertices[iii].z + length * cos(theta)));
+        }
+    }
+
+    // cout the vertices for testing
+    for(int iii = 0; iii < vertices.size(); iii++) {
+        std::cout << vertices[iii].x << ", " << vertices[iii].y << ", " << vertices[iii].z <<  "; r = " <<
+        sqrt((vertices[iii].x - m_center.x) * (vertices[iii].x - m_center.x) +
+             (vertices[iii].y - m_center.y) * (vertices[iii].y - m_center.y) +
+             (vertices[iii].z - m_center.z) * (vertices[iii].z - m_center.z)) << "\n";
+    }
 }
 
 // Generate the colors for the lines so it's not all white and boring

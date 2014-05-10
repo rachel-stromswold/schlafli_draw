@@ -1,7 +1,7 @@
 #ifndef DIAGRAM_H
 #define DIAGRAM_H
 
-#include <GL/glut.h>
+#include <SFML/OpenGL.hpp>
 #include <SFML/Graphics.hpp>
 #include <string>
 
@@ -13,12 +13,8 @@ private:
     int m_s;
     bool m_tess=false;
 
-
     int m_scale;
-    int m_centerX;
-    int m_centerY;
-    int m_centerZ;
-
+    sf::Vector3f m_center;
     sf::RenderWindow* m_w;
 
     sf::VertexArray m_shape;
