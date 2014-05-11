@@ -50,6 +50,18 @@ bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
     return true;
 }
 
+bool Diagram::IsGood(sf::Vector3f vect1, sf::Vector3f vect2) {
+    for(int iii = 0; iii < m_vertices.size(); iii += 2) {
+        if(m_vertices[iii].x == vect1.x && m_vertices[iii].y == vect1.y && m_vertices[iii].z == vect1.z &&
+           m_vertices[iii + 1].x == vect2.x && m_vertices[iii + 1].y == vect2.y && m_vertices[iii + 1].z == vect2.z ||
+           m_vertices[iii].x == vect2.x && m_vertices[iii].y == vect2.y && m_vertices[iii].z == vect2.z &&
+           m_vertices[iii + 1].x == vect1.x && m_vertices[iii + 1].y == vect1.y && m_vertices[iii + 1].z == vect1.z
+           )
+            return false;
+    }
+    return true;
+}
+
 bool Diagram::CanAdd(int x, int y, int z, double * arr, int len){
     for(int i=0;i+2<len;i+=3){
         if(x>arr[i]-.001 && x<arr[i]
@@ -252,31 +264,31 @@ void Diagram::MakeSolid() {
     double theta = GetAngle();  // Calculate our deflection (polar) angle
     double phi = 0;             // The azimuth angle; start at 0 for simplicity's sake
     double length = 2 * m_scale * cos(theta); // How long each side is
-    std::vector<sf::Vector3f> vertices = std::vector<sf::Vector3f>(2);
-    vertices[0] = sf::Vector3f(m_center.x + m_scale, m_center.y, m_center.z); // Starting with a point on the sphere
-    vertices[1] = sf::Vector3f(vertices[0].x + length * cos(PI - theta),      // First edge to be created
-                               vertices[0].y,
-                               vertices[0].z + length * sin(theta));
+    m_vertices = std::vector<sf::Vector3f>(2);
+    m_vertices[0] = sf::Vector3f(m_center.x + m_scale, m_center.y, m_center.z); // Starting with a point on the sphere
+    m_vertices[1] = sf::Vector3f(m_vertices[0].x + length * cos(PI - theta),      // First edge to be created
+                               m_vertices[0].y,
+                               m_vertices[0].z + length * sin(theta));
 
-    for(int iii = 1; iii < 7; iii += 2) { // Main loop for creating the other edges
-        theta = acos((vertices[iii].z - vertices[iii - 1].z) / length);
-        double phi_naught = atan2(vertices[iii].y - vertices[iii - 1].y, vertices[iii].x - vertices[iii - 1].x);
-        std::cout << theta << ", " << phi_naught << "\n";
-
-        for(phi = phi_naught; phi < TAU * m_s + phi_naught; phi += TAU / m_r) {
-            vertices.push_back(vertices[iii]);
-            vertices.push_back(sf::Vector3f(vertices[iii].x + length * cos(theta) * sin(phi),
-                                            vertices[iii].y + length * sin(theta) * cos(phi),
-                                            vertices[iii].z + length * cos(theta)));
+    for(int iii = 1; iii < 5; iii += 2) { // Main loop for creating the other edges
+        for(phi = TAU / m_r * m_s; phi < TAU * m_s; phi += TAU / m_r * m_s) {
+            sf::Vector3f nextVert = RotatePointAboutLine(m_vertices[iii], phi, m_center, m_vertices[iii - 1]);
+            if(fabs(nextVert.x) < .0001) nextVert.x = 0;
+            if(fabs(nextVert.y) < .0001) nextVert.y = 0;
+            if(fabs(nextVert.z) < .0001) nextVert.z = 0;
+            if(IsGood(m_vertices[iii], nextVert)) {
+                m_vertices.push_back(m_vertices[iii]);
+                m_vertices.push_back(nextVert);
+            }
         }
     }
 
     // cout the vertices for testing
-    for(int iii = 0; iii < vertices.size(); iii++) {
-        std::cout << vertices[iii].x << ", " << vertices[iii].y << ", " << vertices[iii].z <<  "; r = " <<
-        sqrt((vertices[iii].x - m_center.x) * (vertices[iii].x - m_center.x) +
-             (vertices[iii].y - m_center.y) * (vertices[iii].y - m_center.y) +
-             (vertices[iii].z - m_center.z) * (vertices[iii].z - m_center.z)) << "\n";
+    for(int iii = 0; iii < m_vertices.size(); iii++) {
+        std::cout << m_vertices[iii].x << ", " << m_vertices[iii].y << ", " << m_vertices[iii].z <<  "; r = " <<
+        sqrt((m_vertices[iii].x - m_center.x) * (m_vertices[iii].x - m_center.x) +
+             (m_vertices[iii].y - m_center.y) * (m_vertices[iii].y - m_center.y) +
+             (m_vertices[iii].z - m_center.z) * (m_vertices[iii].z - m_center.z)) << "\n";
     }
 }
 
@@ -288,6 +300,67 @@ sf::Color Diagram::Colorgen(int seed) {
 
 void Diagram::Draw() {
     m_w->draw(m_shape);
+}
+
+sf::Vector3f Diagram::RotatePointAboutLine(sf::Vector3f p, double theta, sf::Vector3f p1, sf::Vector3f p2)
+{
+    // Note: This code modified from http://paulbourke.net/geometry/rotate/example.c
+    sf::Vector3f u,q1,q2;
+    double d = 0;
+
+    /* Step 1 */
+    q1.x = p.x - p1.x;
+    q1.y = p.y - p1.y;
+    q1.z = p.z - p1.z;
+
+    u.x = p2.x - p1.x;
+    u.y = p2.y - p1.y;
+    u.z = p2.z - p1.z;
+
+    double magnitude = sqrt(u.x * u.x + u.y * u.y + u.z * u.z);
+    u.x /= magnitude;
+    u.y /= magnitude;
+    u.z /= magnitude;
+    d = sqrt(u.y * u.y + u.z * u.z);
+
+    /* Step 2 */
+    if (d != 0) {
+        q2.x = q1.x;
+        q2.y = q1.y * u.z / d - q1.z * u.y / d;
+        q2.z = q1.y * u.y / d + q1.z * u.z / d;
+    } else {
+        q2 = q1;
+    }
+
+    /* Step 3 */
+    q1.x = q2.x * d - q2.z * u.x;
+    q1.y = q2.y;
+    q1.z = q2.x * u.x + q2.z * d;
+
+    /* Step 4 */
+    q2.x = q1.x * cos(theta) - q1.y * sin(theta);
+    q2.y = q1.x * sin(theta) + q1.y * cos(theta);
+    q2.z = q1.z;
+
+    /* Inverse of step 3 */
+    q1.x =   q2.x * d + q2.z * u.x;
+    q1.y =   q2.y;
+    q1.z = - q2.x * u.x + q2.z * d;
+
+    /* Inverse of step 2 */
+    if (d != 0) {
+        q2.x =   q1.x;
+        q2.y =   q1.y * u.z / d + q1.z * u.y / d;
+        q2.z = - q1.y * u.y / d + q1.z * u.z / d;
+    } else {
+        q2 = q1;
+    }
+
+   /* Inverse of step 1 */
+    q1.x = q2.x + p1.x;
+    q1.y = q2.y + p1.y;
+    q1.z = q2.z + p1.z;
+    return q1;
 }
 
 // Converts a string with a number in it to an integer containing that number
