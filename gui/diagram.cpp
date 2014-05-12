@@ -51,12 +51,15 @@ bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
 }
 
 bool Diagram::IsGood(sf::Vector3f vect1, sf::Vector3f vect2) {
-    for(int iii = 0; iii < m_vertices.size(); iii += 2) {
-        if(m_vertices[iii].x == vect1.x && m_vertices[iii].y == vect1.y && m_vertices[iii].z == vect1.z &&
-           m_vertices[iii + 1].x == vect2.x && m_vertices[iii + 1].y == vect2.y && m_vertices[iii + 1].z == vect2.z ||
-           m_vertices[iii].x == vect2.x && m_vertices[iii].y == vect2.y && m_vertices[iii].z == vect2.z &&
-           m_vertices[iii + 1].x == vect1.x && m_vertices[iii + 1].y == vect1.y && m_vertices[iii + 1].z == vect1.z
-           )
+    for(int iii = 0; iii < m_vertices.size(); iii  += 2) {
+        if((int)(m_vertices[iii].x + .5) == (int)(vect1.x + .5) && (int)(m_vertices[iii].y + .5) ==
+           (int)(vect1.y + .5) && (int)(m_vertices[iii].z + .5) == (int)(vect1.z + .5) &&
+           (int)(m_vertices[iii  + 1].x + .5) == (int)(vect2.x + .5) && (int)(m_vertices[iii  + 1].y + .5) ==
+           (int)(vect2.y + .5) && (int)(m_vertices[iii  + 1].z + .5) == (int)(vect2.z + .5) ||
+           (int)(m_vertices[iii].x + .5) == (int)(vect2.x + .5) && (int)(m_vertices[iii].y + .5) ==
+           (int)(vect2.y + .5) && (int)(m_vertices[iii].z + .5) == (int)(vect2.z + .5) &&
+           (int)(m_vertices[iii  + 1].x + .5) == (int)(vect1.x + .5) && (int)(m_vertices[iii  + 1].y + .5) ==
+           (int)(vect1.y + .5) && (int)(m_vertices[iii  + 1].z + .5) == (int)(vect1.z + .5))
             return false;
     }
     return true;
@@ -266,20 +269,28 @@ void Diagram::MakeSolid() {
     double length = 2 * m_scale * cos(theta); // How long each side is
     m_vertices = std::vector<sf::Vector3f>(2);
     m_vertices[0] = sf::Vector3f(m_center.x + m_scale, m_center.y, m_center.z); // Starting with a point on the sphere
-    m_vertices[1] = sf::Vector3f(m_vertices[0].x + length * cos(PI - theta),      // First edge to be created
+    m_vertices[1] = sf::Vector3f(m_vertices[0].x + length * cos(PI - theta),    // First edge to be created
                                m_vertices[0].y,
                                m_vertices[0].z + length * sin(theta));
 
-    for(int iii = 1; iii < 5; iii += 2) { // Main loop for creating the other edges
+    for(int iii = 1; iii < m_vertices.size(); iii += 2) { // Main loop for creating the other edges
         for(phi = TAU / m_r * m_s; phi < TAU * m_s; phi += TAU / m_r * m_s) {
-            sf::Vector3f nextVert = RotatePointAboutLine(m_vertices[iii], phi, m_center, m_vertices[iii - 1]);
+            sf::Vector3f nextVert = RotatePointAboutLine(m_vertices[iii - 1], phi, m_center, m_vertices[iii]);
             if(fabs(nextVert.x) < .0001) nextVert.x = 0;
             if(fabs(nextVert.y) < .0001) nextVert.y = 0;
             if(fabs(nextVert.z) < .0001) nextVert.z = 0;
             if(IsGood(m_vertices[iii], nextVert)) {
                 m_vertices.push_back(m_vertices[iii]);
                 m_vertices.push_back(nextVert);
+                std::cout << iii << "\n";
             }
+            if(fabs(nextVert.x - m_center.x) > 100 ||
+               fabs(nextVert.y - m_center.y) > 100 ||
+               fabs(nextVert.z - m_center.z) > 100) {
+                std::cout << "BORKED!!!!!! iii = " << iii << ", phi = " << phi / TAU / m_s * m_r << "\n";
+                iii = m_vertices.size() + 100;
+                break;
+               }
         }
     }
 
@@ -288,7 +299,17 @@ void Diagram::MakeSolid() {
         std::cout << m_vertices[iii].x << ", " << m_vertices[iii].y << ", " << m_vertices[iii].z <<  "; r = " <<
         sqrt((m_vertices[iii].x - m_center.x) * (m_vertices[iii].x - m_center.x) +
              (m_vertices[iii].y - m_center.y) * (m_vertices[iii].y - m_center.y) +
-             (m_vertices[iii].z - m_center.z) * (m_vertices[iii].z - m_center.z)) << "\n";
+             (m_vertices[iii].z - m_center.z) * (m_vertices[iii].z - m_center.z)) <<
+             ", iii = " << iii << "\n";
+    }
+    m_shape = sf::VertexArray(sf::Lines, 0);
+    std::cout << std::endl;
+    for(int iii = 0; iii < m_vertices.size(); iii++) {
+        if(m_vertices[iii].z * 0 == 0) m_vertices[iii].z = 1;
+        m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x / m_vertices[iii].z,
+                                               m_vertices[iii].y / m_vertices[iii].z)));
+        m_shape[iii].color = Colorgen(iii);
+        //std::cout << m_shape[iii].position.x << ", " << m_shape[iii].position.y << std::endl;
     }
 }
 
