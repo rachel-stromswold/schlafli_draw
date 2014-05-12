@@ -273,43 +273,55 @@ void Diagram::MakeSolid() {
                                m_vertices[0].y,
                                m_vertices[0].z + length * sin(theta));
 
-    for(int iii = 1; iii < m_vertices.size(); iii += 2) { // Main loop for creating the other edges
+    for(int iii = 1; iii < m_vertices.size(); iii += 3) { // Main loop for creating the other edges
         for(phi = TAU / m_r * m_s; phi < TAU * m_s; phi += TAU / m_r * m_s) {
             sf::Vector3f nextVert = RotatePointAboutLine(m_vertices[iii - 1], phi, m_center, m_vertices[iii]);
             if(fabs(nextVert.x) < .0001) nextVert.x = 0;
             if(fabs(nextVert.y) < .0001) nextVert.y = 0;
             if(fabs(nextVert.z) < .0001) nextVert.z = 0;
+
+            /*
+            sf::Vector3f thirdVert = RotatePointAboutLine(m_vertices[iii - 1], phi + TAU / m_r * m_s,
+                                                          m_center, m_vertices[iii]);
+            if(fabs(thirdVert.x) < .0001) thirdVert.x = 0;
+            if(fabs(thirdVert.y) < .0001) thirdVert.y = 0;
+            if(fabs(thirdVert.z) < .0001) thirdVert.z = 0;*/
+
             if(IsGood(m_vertices[iii], nextVert)) {
+                m_vertices.push_back(m_vertices[iii - 1]);
                 m_vertices.push_back(m_vertices[iii]);
                 m_vertices.push_back(nextVert);
                 std::cout << iii << "\n";
             }
-            if(fabs(nextVert.x - m_center.x) > 100 ||
-               fabs(nextVert.y - m_center.y) > 100 ||
-               fabs(nextVert.z - m_center.z) > 100) {
-                std::cout << "BORKED!!!!!! iii = " << iii << ", phi = " << phi / TAU / m_s * m_r << "\n";
-                iii = m_vertices.size() + 100;
-                break;
-               }
         }
     }
 
     // cout the vertices for testing
-    for(int iii = 0; iii < m_vertices.size(); iii++) {
+    /*for(int iii = 0; iii < m_vertices.size(); iii++) {
         std::cout << m_vertices[iii].x << ", " << m_vertices[iii].y << ", " << m_vertices[iii].z <<  "; r = " <<
         sqrt((m_vertices[iii].x - m_center.x) * (m_vertices[iii].x - m_center.x) +
              (m_vertices[iii].y - m_center.y) * (m_vertices[iii].y - m_center.y) +
              (m_vertices[iii].z - m_center.z) * (m_vertices[iii].z - m_center.z)) <<
              ", iii = " << iii << "\n";
-    }
-    m_shape = sf::VertexArray(sf::Lines, 0);
+    }*/
+    m_shape = sf::VertexArray(sf::Triangles, 0);
     std::cout << std::endl;
-    for(int iii = 0; iii < m_vertices.size(); iii++) {
-        if(m_vertices[iii].z * 0 == 0) m_vertices[iii].z = 1;
-        m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x / m_vertices[iii].z,
-                                               m_vertices[iii].y / m_vertices[iii].z)));
-        m_shape[iii].color = Colorgen(iii);
+    for(int iii = 2; iii < m_vertices.size(); iii += 3) {
+        if(m_vertices[iii].z >= 0 || m_vertices[iii + 1].z >= 0 || m_vertices[iii + 2].z >= 0)
+        {
+            std::cout << "Hi\n";
+            m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x,
+                                                   m_vertices[iii].y)));
+            m_shape[iii - 2].color = Colorgen(iii);
+            m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii + 1].x,
+                                                   m_vertices[iii + 1].y)));
+            m_shape[iii - 1].color = Colorgen(iii);
+            m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii + 2].x,
+                                                   m_vertices[iii + 2].y)));
+            m_shape[iii].color = Colorgen(iii);
         //std::cout << m_shape[iii].position.x << ", " << m_shape[iii].position.y << std::endl;
+        }
+        std::cout << m_shape[iii].position.y << "Bye\n";
     }
 }
 
