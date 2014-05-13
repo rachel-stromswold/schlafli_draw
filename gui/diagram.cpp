@@ -50,23 +50,18 @@ bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
     return true;
 }
 
-bool Diagram::IsGood(sf::Vector3f vect1, sf::Vector3f vect2, sf::Vector3f vect3) {
-    for(int iii = 0; iii < m_vertices.size(); iii  += 1) {
-       if((IsApproxEqual(m_vertices[iii], vect1) &&
-                (IsApproxEqual(m_vertices[iii + 1], vect2) && IsApproxEqual(m_vertices[iii + 2], vect3) ||
-                 IsApproxEqual(m_vertices[iii + 1], vect3) && IsApproxEqual(m_vertices[iii + 2], vect2))) ||
-          (IsApproxEqual(m_vertices[iii], vect2) &&
-                (IsApproxEqual(m_vertices[iii + 1], vect1) && IsApproxEqual(m_vertices[iii + 2], vect3) ||
-                 IsApproxEqual(m_vertices[iii + 1], vect3) && IsApproxEqual(m_vertices[iii + 2], vect1))) ||
-          (IsApproxEqual(m_vertices[iii], vect3) &&
-                (IsApproxEqual(m_vertices[iii + 1], vect2) && IsApproxEqual(m_vertices[iii + 2], vect1) ||
-                 IsApproxEqual(m_vertices[iii + 1], vect1) && IsApproxEqual(m_vertices[iii + 2], vect2))))
-            {
-                return false;
-                std::cout << "false\n";
-            }
+bool Diagram::IsGood(sf::Vector3f vect1, sf::Vector3f vect2) {
+    for(int iii = 0; iii < m_vertices.size(); iii  += 2) {
+        if((int)(m_vertices[iii].x + .5) == (int)(vect1.x + .5) && (int)(m_vertices[iii].y + .5) ==
+           (int)(vect1.y + .5) && (int)(m_vertices[iii].z + .5) == (int)(vect1.z + .5) &&
+           (int)(m_vertices[iii  + 1].x + .5) == (int)(vect2.x + .5) && (int)(m_vertices[iii  + 1].y + .5) ==
+           (int)(vect2.y + .5) && (int)(m_vertices[iii  + 1].z + .5) == (int)(vect2.z + .5) ||
+           (int)(m_vertices[iii].x + .5) == (int)(vect2.x + .5) && (int)(m_vertices[iii].y + .5) ==
+           (int)(vect2.y + .5) && (int)(m_vertices[iii].z + .5) == (int)(vect2.z + .5) &&
+           (int)(m_vertices[iii  + 1].x + .5) == (int)(vect1.x + .5) && (int)(m_vertices[iii  + 1].y + .5) ==
+           (int)(vect1.y + .5) && (int)(m_vertices[iii  + 1].z + .5) == (int)(vect1.z + .5))
+            return false;
     }
-    std::cout << "true\n";
     return true;
 }
 
@@ -268,48 +263,33 @@ void Diagram::MakeSolid() {
             Ensure that the orientation is correct; the place of the vertex figure should be perpendicular to
                 the line through its vertex and the center
     */
-    m_scale = 100; //TODO: replace dummy value
-    double theta = GetAngle();  // Calculate our deflection (polar) angle
-    double phi = 0;             // The azimuth angle; start at 0 for simplicity's sake
+    m_scale = 200;
+    double theta = GetAngle();  // Calculate our deflection angle
     double length = 2 * m_scale * cos(theta); // How long each side is
     m_vertices = std::vector<sf::Vector3f>(2);
     m_vertices[0] = sf::Vector3f(m_center.x + m_scale, m_center.y, m_center.z); // Starting with a point on the sphere
     m_vertices[1] = sf::Vector3f(m_vertices[0].x + length * cos(PI - theta),    // First edge to be created
-                               m_vertices[0].y,
-                               m_vertices[0].z + length * sin(theta));
+                               m_vertices[0].y + length * sin(theta),
+                               m_vertices[0].z);
 
-    for(int iii = 1; iii < 30/*m_vertices.size()*/; iii += 3) { // Main loop for creating the other edges
-        for(phi = TAU / m_r * m_s; phi < TAU  * m_s; phi += TAU / m_r * m_s) {
+    for(int iii = 1; iii < m_vertices.size(); iii += 2) { // Main loop for creating the other edges
+        for(double phi = TAU / m_r * m_s; phi < TAU * m_s; phi += TAU / m_r * m_s) {
             sf::Vector3f nextVert = RotatePointAboutLine(m_vertices[iii - 1], phi, m_center, m_vertices[iii]);
             if(fabs(nextVert.x) < .0001) nextVert.x = 0;
             if(fabs(nextVert.y) < .0001) nextVert.y = 0;
             if(fabs(nextVert.z) < .0001) nextVert.z = 0;
-
-            if(IsGood(m_vertices[iii - 1], m_vertices[iii], nextVert)) {
-                m_vertices.push_back(m_vertices[iii - 1]);
+            if(IsGood(m_vertices[iii], nextVert)) {
                 m_vertices.push_back(m_vertices[iii]);
                 m_vertices.push_back(nextVert);
-                std::cout << iii << "\n";
             }
         }
     }
 
-    m_shape = sf::VertexArray(sf::Triangles, 0);
-    std::cout << std::endl;
-    for(int iii = 2; iii < m_vertices.size(); iii += 3) {
-        if(m_vertices[iii].y >= m_center.y || m_vertices[iii + 1].y >= m_center.y || m_vertices[iii + 2].y >= m_center.y)
-        {
-            m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x,
-                                                   m_vertices[iii].z + m_center.y)));
-            m_shape[iii - 2].color = Colorgen(iii);
-            m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii + 1].x,
-                                                   m_vertices[iii + 1].z + m_center.y)));
-            m_shape[iii - 1].color = Colorgen(iii + 1);
-            m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii + 2].x,
-                                                   m_vertices[iii + 2].z + m_center.y)));
-            m_shape[iii].color = Colorgen(iii + 2);
-        //std::cout << m_shape[iii].position.x << ", " << m_shape[iii].position.y << std::endl;
-        }
+    m_shape = sf::VertexArray(sf::Lines, 0);
+    for(int iii = 0; iii < m_vertices.size(); iii++) {
+        m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x,
+                                               m_vertices[iii].y)));
+        m_shape[iii].color = Colorgen(iii);
     }
 }
 
@@ -320,11 +300,29 @@ sf::Color Diagram::Colorgen(int seed) {
 }
 
 void Diagram::Draw() {
-    m_w->draw(m_shape);
+    if(m_r == -1 || m_tess)
+    {
+        m_w->draw(m_shape);
+    }
+    else
+    {
+        m_w->clear();
+        for(int iii = 0; iii < m_vertices.size(); iii++) {
+            m_vertices[iii] = RotatePointAboutLine(m_vertices[iii], PI/2000, m_center, m_center + sf::Vector3f(10, -8, 10));
+        }
+        m_shape = sf::VertexArray(sf::Lines, 0);
+        for(int iii = 0; iii < m_vertices.size(); iii++) {
+            sf::Vertex vert = sf::Vertex(sf::Vector2f(m_vertices[iii].x,
+                                                   m_vertices[iii].y));
+            vert.color = Colorgen(iii);
+            m_shape.append(vert);
+        }
+        m_w->draw(m_shape);
+    }
+
 }
 
-sf::Vector3f Diagram::RotatePointAboutLine(sf::Vector3f p, double theta, sf::Vector3f p1, sf::Vector3f p2)
-{
+sf::Vector3f Diagram::RotatePointAboutLine(sf::Vector3f p, double theta, sf::Vector3f p1, sf::Vector3f p2) {
     // Note: This code modified from http://paulbourke.net/geometry/rotate/example.c
     sf::Vector3f u,q1,q2;
     double d = 0;
@@ -421,10 +419,4 @@ sf::Color HSVtoRGB(int hue, double sat, double val) {
         case 4: return sf::Color(t * 255, p * 255, val * 255);
         case 5: return sf::Color(val * 255, p * 255, q * 255);
     }
-}
-
-bool IsApproxEqual(sf::Vector3f v1, sf::Vector3f v2) {
-    return (((int)(v1.x + .5) == (int)(v2.x + .5)) &&
-           ((int)(v1.y + .5) == (int)(v2.y+ .5)) &&
-           ((int)(v1.z + .5) == (int)(v2.z + .5)));
 }
