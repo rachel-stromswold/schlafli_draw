@@ -31,12 +31,16 @@ void InputBox::Draw() {
 }
 
 void InputBox::EnterText(char n) {
-    std::string temp = m_stored.getString();
-    if(n != 8 && n != 13 && n < 128) { // Some character
-        m_stored.setString(temp.substr(0, temp.length() - 1) + n + '}');
-    } else if(n == 8) { // Backspace
-        if(temp.length() > 2)
-            m_stored.setString(temp.substr(0, temp.length() - 2) + '}');
+    if(n == '0' || n == '1' || n == '2' || n == '3' || n == '4' || n == '5' ||
+       n == '6' || n == '7' || n == '8' || n == '9' || n == ',' || n == '/' ||
+       n == 8) { // n is a digit, comma, slash, or backspace
+        std::string temp = m_stored.getString();
+        if(n != 8) { // Some character
+            m_stored.setString(temp.substr(0, temp.length() - 1) + n + '}');
+        } else if(n == 8) { // Backspace
+            if(temp.length() > 2)
+                m_stored.setString(temp.substr(0, temp.length() - 2) + '}');
+        }
     }
 }
 

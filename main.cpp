@@ -16,6 +16,8 @@ int main() {
     Diagram poly = Diagram(&window, window.getSize().x / 2,
                            (window.getSize().y - but.GetHeight()) / 2 + but.GetHeight());
 
+    bool autoRotate = true;
+
     while (window.isOpen())
     {
         sf::Event event;
@@ -26,6 +28,8 @@ int main() {
                 window.close();
             } else if (event.type == sf::Event::TextEntered) {
                 input.EnterText(event.text.unicode);
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Tab) {
+                autoRotate = !autoRotate;
             } else if ((event.type == sf::Event::MouseButtonPressed &&
                         event.mouseButton.button == sf::Mouse::Left &&
                         but.IsPressed(event.mouseButton.x, event.mouseButton.y)) ||
@@ -36,8 +40,11 @@ int main() {
                 poly.MakePoly();
             }
         }
-
         window.clear();
+        poly.RotateSolid(sf::Keyboard::isKeyPressed(sf::Keyboard::W) - sf::Keyboard::isKeyPressed(sf::Keyboard::S),
+                         sf::Keyboard::isKeyPressed(sf::Keyboard::A) - sf::Keyboard::isKeyPressed(sf::Keyboard::D),
+                         sf::Keyboard::isKeyPressed(sf::Keyboard::E) - sf::Keyboard::isKeyPressed(sf::Keyboard::Q),
+                         autoRotate);
         poly.Draw();
         input.Draw();
         but.Draw();

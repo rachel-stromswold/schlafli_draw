@@ -26,8 +26,9 @@ Diagram::Diagram() {
 }
 
 Diagram::Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string str) :
-    m_shape(sf::Lines, 0),
-    m_center(centerX, centerY, 0) {
+    m_center(centerX, centerY, 0),
+    m_shape(sf::Lines, 0)
+{
     m_w = window;
     if (!str.empty())
         SetPQR(str);
@@ -39,10 +40,8 @@ bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
         return true;
     for(int iii = 0; iii < m_shape.getVertexCount() - 1; iii += 2) { // Check all lines in m_shape
         // Returns true if the two vertices appear in sequence anywhere in m_shape (not necessarily in order)
-        if(m_shape[iii].position.x == vert1.position.x && m_shape[iii].position.y == vert1.position.y &&
-           m_shape[iii + 1].position.x == vert2.position.x && m_shape[iii + 1].position.y == vert2.position.y ||
-           m_shape[iii].position.x == vert2.position.x && m_shape[iii].position.y == vert2.position.y &&
-           m_shape[iii + 1].position.x == vert1.position.x && m_shape[iii + 1].position.y == vert1.position.y)
+        if((m_shape[iii].position == vert1.position && m_shape[iii + 1].position == vert2.position) ||
+           (m_shape[iii].position == vert2.position && m_shape[iii + 1].position == vert1.position))
         {
             return false;
         }
@@ -269,8 +268,8 @@ void Diagram::MakeSolid() {
     m_vertices = std::vector<sf::Vector3f>(2);
     m_vertices[0] = sf::Vector3f(m_center.x + m_scale, m_center.y, m_center.z); // Starting with a point on the sphere
     m_vertices[1] = sf::Vector3f(m_vertices[0].x + length * cos(PI - theta),    // First edge to be created
-                               m_vertices[0].y + length * sin(theta),
-                               m_vertices[0].z);
+                                 m_vertices[0].y + length * sin(theta),
+                                 m_vertices[0].z);
 
     for(int iii = 1; iii < m_vertices.size(); iii += 2) { // Main loop for creating the other edges
         for(double phi = TAU / m_r * m_s; phi < TAU * m_s; phi += TAU / m_r * m_s) {
@@ -293,6 +292,26 @@ void Diagram::MakeSolid() {
     }
 }
 
+void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
+    if(xDir == 0 && yDir == 0 && zDir == 0 && !autoRotate || (m_r == -1 || m_tess)) return;
+    if(autoRotate) {
+        xDir = 10;
+        yDir = -8;
+        zDir = 10;
+    }
+    for(int iii = 0; iii < m_vertices.size(); iii++) {
+        m_vertices[iii] = RotatePointAboutLine(m_vertices[iii], PI/2000,
+                                               m_center, m_center + sf::Vector3f(xDir, yDir, zDir));
+    }
+    m_shape = sf::VertexArray(sf::Lines, 0);
+    for(int iii = 0; iii < m_vertices.size(); iii++) {
+        sf::Vertex vert = sf::Vertex(sf::Vector2f(m_vertices[iii].x,
+                                                  m_vertices[iii].y));
+        vert.color = Colorgen(iii);
+        m_shape.append(vert);
+    }
+}
+
 // Generate the colors for the lines so it's not all white and boring
 sf::Color Diagram::Colorgen(int seed) {
     int hue = ((seed + 23657) * 15274) % 360;
@@ -300,26 +319,7 @@ sf::Color Diagram::Colorgen(int seed) {
 }
 
 void Diagram::Draw() {
-    if(m_r == -1 || m_tess)
-    {
-        m_w->draw(m_shape);
-    }
-    else
-    {
-        m_w->clear();
-        for(int iii = 0; iii < m_vertices.size(); iii++) {
-            m_vertices[iii] = RotatePointAboutLine(m_vertices[iii], PI/2000, m_center, m_center + sf::Vector3f(10, -8, 10));
-        }
-        m_shape = sf::VertexArray(sf::Lines, 0);
-        for(int iii = 0; iii < m_vertices.size(); iii++) {
-            sf::Vertex vert = sf::Vertex(sf::Vector2f(m_vertices[iii].x,
-                                                   m_vertices[iii].y));
-            vert.color = Colorgen(iii);
-            m_shape.append(vert);
-        }
-        m_w->draw(m_shape);
-    }
-
+    m_w->draw(m_shape);
 }
 
 sf::Vector3f Diagram::RotatePointAboutLine(sf::Vector3f p, double theta, sf::Vector3f p1, sf::Vector3f p2) {

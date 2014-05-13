@@ -35,6 +35,8 @@ public:
     void MakeSolid();
     void CreateNet(int scale, double * arr, int len);
 
+    void RotateSolid(int xDir, int yDir, int zDir, bool autoRotate);
+
     sf::Vector3f RotatePointAboutLine(sf::Vector3f p, double theta, sf::Vector3f p1, sf::Vector3f p2);
     sf::Color Colorgen(int seed);
     void Draw();
