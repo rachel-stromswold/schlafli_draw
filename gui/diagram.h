@@ -24,7 +24,7 @@ public:
     Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string str = "");
 
     bool IsGood(sf::Vertex vert1, sf::Vertex vert2);
-    bool IsGood(sf::Vector3f vect1, sf::Vector3f vect2);
+    bool IsGood(sf::Vector3f vect1, sf::Vector3f vect2, sf::Vector3f vect3);
     bool CanAdd(int x, int y, int z, double * arr, int len);
     void SetPQR(std::string  str); // Sets p, q, r, and s
     double GetAngle(); // Returns the "bend angle" for polyhedra
@@ -43,5 +43,7 @@ public:
 // Converts a string with a number in it to an integer containing that number; move to better location in the future
 int ToInt(std::string str);
 sf::Color HSVtoRGB(int hue, double sat, double val);
+
+bool IsApproxEqual(sf::Vector3f v1, sf::Vector3f v2);
 
 #endif //H_DIAGRAM

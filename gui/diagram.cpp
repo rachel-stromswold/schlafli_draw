@@ -50,18 +50,23 @@ bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
     return true;
 }
 
-bool Diagram::IsGood(sf::Vector3f vect1, sf::Vector3f vect2) {
-    for(int iii = 0; iii < m_vertices.size(); iii  += 2) {
-        if((int)(m_vertices[iii].x + .5) == (int)(vect1.x + .5) && (int)(m_vertices[iii].y + .5) ==
-           (int)(vect1.y + .5) && (int)(m_vertices[iii].z + .5) == (int)(vect1.z + .5) &&
-           (int)(m_vertices[iii  + 1].x + .5) == (int)(vect2.x + .5) && (int)(m_vertices[iii  + 1].y + .5) ==
-           (int)(vect2.y + .5) && (int)(m_vertices[iii  + 1].z + .5) == (int)(vect2.z + .5) ||
-           (int)(m_vertices[iii].x + .5) == (int)(vect2.x + .5) && (int)(m_vertices[iii].y + .5) ==
-           (int)(vect2.y + .5) && (int)(m_vertices[iii].z + .5) == (int)(vect2.z + .5) &&
-           (int)(m_vertices[iii  + 1].x + .5) == (int)(vect1.x + .5) && (int)(m_vertices[iii  + 1].y + .5) ==
-           (int)(vect1.y + .5) && (int)(m_vertices[iii  + 1].z + .5) == (int)(vect1.z + .5))
-            return false;
+bool Diagram::IsGood(sf::Vector3f vect1, sf::Vector3f vect2, sf::Vector3f vect3) {
+    for(int iii = 0; iii < m_vertices.size(); iii  += 1) {
+       if((IsApproxEqual(m_vertices[iii], vect1) &&
+                (IsApproxEqual(m_vertices[iii + 1], vect2) && IsApproxEqual(m_vertices[iii + 2], vect3) ||
+                 IsApproxEqual(m_vertices[iii + 1], vect3) && IsApproxEqual(m_vertices[iii + 2], vect2))) ||
+          (IsApproxEqual(m_vertices[iii], vect2) &&
+                (IsApproxEqual(m_vertices[iii + 1], vect1) && IsApproxEqual(m_vertices[iii + 2], vect3) ||
+                 IsApproxEqual(m_vertices[iii + 1], vect3) && IsApproxEqual(m_vertices[iii + 2], vect1))) ||
+          (IsApproxEqual(m_vertices[iii], vect3) &&
+                (IsApproxEqual(m_vertices[iii + 1], vect2) && IsApproxEqual(m_vertices[iii + 2], vect1) ||
+                 IsApproxEqual(m_vertices[iii + 1], vect1) && IsApproxEqual(m_vertices[iii + 2], vect2))))
+            {
+                return false;
+                std::cout << "false\n";
+            }
     }
+    std::cout << "true\n";
     return true;
 }
 
@@ -273,21 +278,14 @@ void Diagram::MakeSolid() {
                                m_vertices[0].y,
                                m_vertices[0].z + length * sin(theta));
 
-    for(int iii = 1; iii < m_vertices.size(); iii += 3) { // Main loop for creating the other edges
-        for(phi = TAU / m_r * m_s; phi < TAU * m_s; phi += TAU / m_r * m_s) {
+    for(int iii = 1; iii < 30/*m_vertices.size()*/; iii += 3) { // Main loop for creating the other edges
+        for(phi = TAU / m_r * m_s; phi < TAU  * m_s; phi += TAU / m_r * m_s) {
             sf::Vector3f nextVert = RotatePointAboutLine(m_vertices[iii - 1], phi, m_center, m_vertices[iii]);
             if(fabs(nextVert.x) < .0001) nextVert.x = 0;
             if(fabs(nextVert.y) < .0001) nextVert.y = 0;
             if(fabs(nextVert.z) < .0001) nextVert.z = 0;
 
-            /*
-            sf::Vector3f thirdVert = RotatePointAboutLine(m_vertices[iii - 1], phi + TAU / m_r * m_s,
-                                                          m_center, m_vertices[iii]);
-            if(fabs(thirdVert.x) < .0001) thirdVert.x = 0;
-            if(fabs(thirdVert.y) < .0001) thirdVert.y = 0;
-            if(fabs(thirdVert.z) < .0001) thirdVert.z = 0;*/
-
-            if(IsGood(m_vertices[iii], nextVert)) {
+            if(IsGood(m_vertices[iii - 1], m_vertices[iii], nextVert)) {
                 m_vertices.push_back(m_vertices[iii - 1]);
                 m_vertices.push_back(m_vertices[iii]);
                 m_vertices.push_back(nextVert);
@@ -296,32 +294,22 @@ void Diagram::MakeSolid() {
         }
     }
 
-    // cout the vertices for testing
-    /*for(int iii = 0; iii < m_vertices.size(); iii++) {
-        std::cout << m_vertices[iii].x << ", " << m_vertices[iii].y << ", " << m_vertices[iii].z <<  "; r = " <<
-        sqrt((m_vertices[iii].x - m_center.x) * (m_vertices[iii].x - m_center.x) +
-             (m_vertices[iii].y - m_center.y) * (m_vertices[iii].y - m_center.y) +
-             (m_vertices[iii].z - m_center.z) * (m_vertices[iii].z - m_center.z)) <<
-             ", iii = " << iii << "\n";
-    }*/
     m_shape = sf::VertexArray(sf::Triangles, 0);
     std::cout << std::endl;
     for(int iii = 2; iii < m_vertices.size(); iii += 3) {
-        if(m_vertices[iii].z >= 0 || m_vertices[iii + 1].z >= 0 || m_vertices[iii + 2].z >= 0)
+        if(m_vertices[iii].y >= m_center.y || m_vertices[iii + 1].y >= m_center.y || m_vertices[iii + 2].y >= m_center.y)
         {
-            std::cout << "Hi\n";
             m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x,
-                                                   m_vertices[iii].y)));
+                                                   m_vertices[iii].z + m_center.y)));
             m_shape[iii - 2].color = Colorgen(iii);
             m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii + 1].x,
-                                                   m_vertices[iii + 1].y)));
-            m_shape[iii - 1].color = Colorgen(iii);
+                                                   m_vertices[iii + 1].z + m_center.y)));
+            m_shape[iii - 1].color = Colorgen(iii + 1);
             m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii + 2].x,
-                                                   m_vertices[iii + 2].y)));
-            m_shape[iii].color = Colorgen(iii);
+                                                   m_vertices[iii + 2].z + m_center.y)));
+            m_shape[iii].color = Colorgen(iii + 2);
         //std::cout << m_shape[iii].position.x << ", " << m_shape[iii].position.y << std::endl;
         }
-        std::cout << m_shape[iii].position.y << "Bye\n";
     }
 }
 
@@ -433,4 +421,10 @@ sf::Color HSVtoRGB(int hue, double sat, double val) {
         case 4: return sf::Color(t * 255, p * 255, val * 255);
         case 5: return sf::Color(val * 255, p * 255, q * 255);
     }
+}
+
+bool IsApproxEqual(sf::Vector3f v1, sf::Vector3f v2) {
+    return (((int)(v1.x + .5) == (int)(v2.x + .5)) &&
+           ((int)(v1.y + .5) == (int)(v2.y+ .5)) &&
+           ((int)(v1.z + .5) == (int)(v2.z + .5)));
 }
