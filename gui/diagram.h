@@ -26,7 +26,7 @@ public:
 
     bool IsGood(sf::Vertex vert1, sf::Vertex vert2);
     bool IsGood(sf::Vector3f vect1, sf::Vector3f vect2);
-    bool IsGood(std::vector<sf::Vector3f>);
+    bool IsGood(std::vector<sf::Vector3f> face);
 
     bool CanAdd(int x, int y, int z, double * arr, int len);
     void SetPQR(std::string  str); // Sets p, q, r, and s

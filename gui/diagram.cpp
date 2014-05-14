@@ -56,6 +56,33 @@ bool Diagram::IsGood(sf::Vector3f vect1, sf::Vector3f vect2) {
     return true;
 }
 
+bool Diagram::IsGood(std::vector<sf::Vector3f> face) {
+    for(int iii = 0; iii < m_faces.size(); iii++) {
+        double avgX1 = 0, avgX2 = 0,
+            avgY1 = 0, avgY2 = 0,
+            avgZ1 = 0, avgZ2 = 0;
+        for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {
+            avgX1 += m_faces[iii][jjj].x;
+            avgX2 += face[jjj].x;
+            avgY1 += m_faces[iii][jjj].y;
+            avgY2 += face[jjj].y;
+            avgZ1 += m_faces[iii][jjj].z;
+            avgZ2 += face[jjj].z;
+        }
+        avgX1 /= face.size();
+        avgX2 /= face.size();
+        avgY1 /= face.size();
+        avgY2 /= face.size();
+        avgZ1 /= face.size();
+        avgZ2 /= face.size();
+        if((int)(avgX1 + .5) == (int)(avgX2 + .5) &&
+           (int)(avgY1 + .5) == (int)(avgY2 + .5) &&
+           (int)(avgZ1 + .5) == (int)(avgZ2 + .5))
+            return false;
+    }
+    return true;
+}
+
 void Diagram::SetPQR(std::string str) {
     m_p = 2; // Empty schlafli set = line segment
     m_q = 1;
@@ -116,9 +143,6 @@ void Diagram::MakePoly(std::string str) {
     } else if(m_tess){ // 2D tessellation
         Tessellate();
     } else { // 3D Polyhedron
-        /*double l=-2/((double)(m_r)/2-(double)(m_r)/(double)(m_p)-1); // Sam Stuff
-        double verts[3*(int)l];//3 times the number of needed verts
-        CreateNet(10,verts,3*(int)l);*/
         MakePolyhedron();
     }
 }
@@ -209,7 +233,7 @@ void Diagram::MakePolyhedron() {
             m_shape[iii].color = Colorgen(iii);
         }
     } else {
-        m_faces = std::vector<std::vector<sf::Vector3f> >(0);
+        m_faces = std::vector< std::vector<sf::Vector3f> >(0);
         for(int iii = 2; iii < m_vertices.size(); iii += 1) {
             std::vector<sf::Vector3f> face = std::vector<sf::Vector3f>(m_p);
             face[0] = m_vertices[iii - 1];
@@ -218,8 +242,11 @@ void Diagram::MakePolyhedron() {
                 face[jjj] = RotatePointAboutLine(face[jjj - 2], TAU / m_r * m_s,
                                                  m_center, face[jjj - 1]);
             }
-            m_faces.push_back(face);
+            if(IsGood(face)) {
+                m_faces.push_back(face);
+            }
         }
+        std::cout << m_faces.size() << std::endl;
         m_vertices.clear();
         RotateSolid(0, 0, 0, true);
     }
