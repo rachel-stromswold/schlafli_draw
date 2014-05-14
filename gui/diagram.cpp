@@ -7,14 +7,6 @@
 #define PI (atan(1) * 4)
 #define TAU (2 * PI)
 
-#define TET_PHI 19.471220333
-#define CUBE_PHI 35.264391
-#define OCT_PHI 0.0
-#define ICO_PHI 26.56505
-#define DOD_PHIA 52.62263590
-#define DOD_PHIB 10.81231754
-//TODO: find how to actually calculate these values
-
 Diagram::Diagram() {
     m_p = 2;
     m_q = 1;
@@ -64,17 +56,6 @@ bool Diagram::IsGood(sf::Vector3f vect1, sf::Vector3f vect2) {
     return true;
 }
 
-bool Diagram::CanAdd(int x, int y, int z, double * arr, int len){
-    for(int i=0;i+2<len;i+=3){
-        if(x>arr[i]-.001 && x<arr[i]
-            && y>arr[i+1]-.001 && y<arr[i+1]+.001
-            && z>arr[i+2]-.001 && z<arr[i+2]+.001 ){
-                return false;
-        }
-    }
-    return true;
-}
-
 void Diagram::SetPQR(std::string str) {
     m_p = 2; // Empty schlafli set = line segment
     m_q = 1;
@@ -110,10 +91,10 @@ void Diagram::SetPQR(std::string str) {
     while(m_q > m_p / 2) m_q = abs(m_p - m_q); // Put q in (1, p/2) for convenience
 
     //(p-2)*180/p is the interior angle of 1 vertex on the regular shape
-    if(m_r * ((m_p - 2) * 180 / m_p) == 360){
+    if(m_r * ((m_p - 2) * PI / m_p) == TAU) {
         m_tess = true; // This is a tessellation of a plane
     } else {
-        m_tess = false;
+        m_tess = false; // We fold up, so this is a 3D solid (if it's valid)
     }
 }
 
@@ -131,7 +112,7 @@ void Diagram::MakePoly(std::string str) {
     if(str != "")
         SetPQR(str);
     if(m_r == -1) { // 2D Polygon
-        MakeDiagram();
+        MakePolygon();
     } else if(m_tess){ // 2D tessellation
         Tessellate();
     } else { // 3D Polytope
@@ -142,7 +123,7 @@ void Diagram::MakePoly(std::string str) {
     }
 }
 
-void Diagram::MakeDiagram() {
+void Diagram::MakePolygon() {
     m_scale = (m_w->getSize().y * .99) / 2.2; // Scale to window size
     m_shape = sf::VertexArray(sf::Lines, 2 * m_p);
     // The initial angle (for the first vertex)
@@ -194,74 +175,7 @@ void Diagram::Tessellate() {
     m_shape.resize(m_shape.getVertexCount() - 1); // Remove the last vertex, since we have one too many
 }
 
-void Diagram::CreateNet(int scale, double * arr, int len) {
-    int loops=m_r-1;//usually this works except for the dodecohedron
-
-    int ii=0;
-
-    double phi=0.0;
-    double ang=0.0;
-    double theta=0.0;
-
-    double x=0;
-    double y=0;
-    double z=0;
-
-    //TODO: actually find a formula for these values
-    switch(2/(m_p/m_q - m_p/2 + 1)){
-    case 4:
-        phi=TET_PHI;
-        break;
-    case 6:
-        phi=CUBE_PHI;
-        break;
-    case 8:
-        phi=OCT_PHI;
-        break;
-    case 20:
-        phi=ICO_PHI;
-        break;
-    default:
-        break;
-    }
-    if(m_p==5){//the dodecahedron is a special and very annoying case
-        loops=4;//for the dodecahedron
-    }else{
-        for(double i=PI/2;i>=0;i-=PI/(2*loops)){
-            ang=(double)((int)(0.99+cos(i)))*ICO_PHI;
-            //std::cout<<ang<<std::endl;
-            //std::cout<<std::endl;
-            theta=0;
-            for(int j=0;j<11;j++){
-                x=scale*cos(theta)*cos(ang);
-                y=scale*sin(theta)*cos(ang);
-                z=scale*sin(ang);
-                if(CanAdd(x,y,z,arr,len) && ii+2<len){
-                    arr[ii]=x;
-                    std::cout<<x<<std::endl;
-                    arr[ii+1]=y;
-                    std::cout<<y<<std::endl;
-                    arr[ii+2]=z;
-                    std::cout<<z<<std::endl;
-                    std::cout<<std::endl;
-                    ii+=3;
-                }
-                theta+=TAU/(m_p);//increments the angle by the proper amount
-            }
-        }
-    }
-}
-
 void Diagram::MakeSolid() {
-    /* Strategy:
-        Starting with one vertex, draw the vertex figure.
-            Extend the lines so that the ends are equidistant from the center
-        Connect the appropriate lines to form triangular faces
-        From each new vertex, repeat until done
-            Check each time to ensure you're not drawing over an existing edge
-            Ensure that the orientation is correct; the place of the vertex figure should be perpendicular to
-                the line through its vertex and the center
-    */
     m_scale = 200;
     double theta = GetAngle();  // Calculate our deflection angle
     double length = 2 * m_scale * cos(theta); // How long each side is
@@ -271,22 +185,24 @@ void Diagram::MakeSolid() {
                                  m_vertices[0].y + length * sin(theta),
                                  m_vertices[0].z);
 
-    for(int iii = 1; iii < m_vertices.size(); iii += 2) { // Main loop for creating the other edges
+    for(int iii = 1; iii < m_vertices.size() && iii < 1000; iii += 2) { // Main loop for creating the other edges
         for(double phi = TAU / m_r * m_s; phi < TAU * m_s; phi += TAU / m_r * m_s) {
+            // Rotate the starting vertex of the line by phi around the line connecting the center and the ending vertex
             sf::Vector3f nextVert = RotatePointAboutLine(m_vertices[iii - 1], phi, m_center, m_vertices[iii]);
-            if(fabs(nextVert.x) < .0001) nextVert.x = 0;
+            if(fabs(nextVert.x) < .0001) nextVert.x = 0; // Deal with rounding error a little bit around the axes
             if(fabs(nextVert.y) < .0001) nextVert.y = 0;
             if(fabs(nextVert.z) < .0001) nextVert.z = 0;
-            if(IsGood(m_vertices[iii], nextVert)) {
-                m_vertices.push_back(m_vertices[iii]);
+            if(IsGood(m_vertices[iii], nextVert)) {     // If the edge isn't already present
+                m_vertices.push_back(m_vertices[iii]);  // Add the starting and ending points
                 m_vertices.push_back(nextVert);
             }
         }
     }
 
+    // Put the vertices into a 2D vertex array for drawing
     m_shape = sf::VertexArray(sf::Lines, 0);
     for(int iii = 0; iii < m_vertices.size(); iii++) {
-        m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x,
+        m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x,   // Just drop z coordinate
                                                m_vertices[iii].y)));
         m_shape[iii].color = Colorgen(iii);
     }
@@ -300,7 +216,7 @@ void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
         zDir = 10;
     }
     for(int iii = 0; iii < m_vertices.size(); iii++) {
-        m_vertices[iii] = RotatePointAboutLine(m_vertices[iii], PI/2000,
+        m_vertices[iii] = RotatePointAboutLine(m_vertices[iii], PI / 2500,
                                                m_center, m_center + sf::Vector3f(xDir, yDir, zDir));
     }
     m_shape = sf::VertexArray(sf::Lines, 0);

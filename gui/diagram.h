@@ -30,7 +30,7 @@ public:
     double GetAngle(); // Returns the "bend angle" for polyhedra
 
     void MakePoly(std::string str = "");
-    void MakeDiagram();
+    void MakePolygon();
     void Tessellate();
     void MakeSolid();
     void CreateNet(int scale, double * arr, int len);

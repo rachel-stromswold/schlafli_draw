@@ -723,12 +723,12 @@
 	<SFML/Graphics.hpp>
 	<string>
 
-1399998763 c:\users\devon\desktop\workspace\schlafli\gui\diagram.h
+1400010504 c:\users\devon\desktop\workspace\schlafli\gui\diagram.h
 	<SFML/OpenGL.hpp>
 	<SFML/Graphics.hpp>
 	<string>
 
-1399999511 source:c:\users\devon\desktop\workspace\schlafli\gui\diagram.cpp
+1400080171 source:c:\users\devon\desktop\workspace\schlafli\gui\diagram.cpp
 	<SFML/Graphics.hpp>
 	<string>
 	<iostream>
@@ -740,7 +740,7 @@
 	<string>
 	"text.h"
 
-1399998763 source:c:\users\devon\desktop\workspace\schlafli\main.cpp
+1400000805 source:c:\users\devon\desktop\workspace\schlafli\main.cpp
 	<SFML/Graphics.hpp>
 	".\gui\text.h"
 	".\gui\button.h"

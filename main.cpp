@@ -5,7 +5,7 @@
 #include <iostream>
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(640, 480), "Schlaefli 2D");
+    sf::RenderWindow window(sf::VideoMode(640, 480), "Schlafli");
 
     sf::Font inFont;
     if(!inFont.loadFromFile("VeraMono.ttf")){/*error handling*/}
