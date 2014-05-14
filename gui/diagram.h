@@ -19,12 +19,15 @@ private:
 
     sf::VertexArray m_shape;
     std::vector<sf::Vector3f> m_vertices;
+    std::vector<std::vector<sf::Vector3f> > m_faces;
 public:
     Diagram();
     Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string str = "");
 
     bool IsGood(sf::Vertex vert1, sf::Vertex vert2);
     bool IsGood(sf::Vector3f vect1, sf::Vector3f vect2);
+    bool IsGood(std::vector<sf::Vector3f>);
+
     bool CanAdd(int x, int y, int z, double * arr, int len);
     void SetPQR(std::string  str); // Sets p, q, r, and s
     double GetAngle(); // Returns the "bend angle" for polyhedra
@@ -32,7 +35,7 @@ public:
     void MakePoly(std::string str = "");
     void MakePolygon();
     void Tessellate();
-    void MakeSolid();
+    void MakePolyhedron();
     void CreateNet(int scale, double * arr, int len);
 
     void RotateSolid(int xDir, int yDir, int zDir, bool autoRotate);

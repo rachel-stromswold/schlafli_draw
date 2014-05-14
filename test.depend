@@ -723,12 +723,12 @@
 	<SFML/Graphics.hpp>
 	<string>
 
-1400010504 c:\users\devon\desktop\workspace\schlafli\gui\diagram.h
+1400087702 c:\users\devon\desktop\workspace\schlafli\gui\diagram.h
 	<SFML/OpenGL.hpp>
 	<SFML/Graphics.hpp>
 	<string>
 
-1400080171 source:c:\users\devon\desktop\workspace\schlafli\gui\diagram.cpp
+1400088700 source:c:\users\devon\desktop\workspace\schlafli\gui\diagram.cpp
 	<SFML/Graphics.hpp>
 	<string>
 	<iostream>

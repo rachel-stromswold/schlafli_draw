@@ -115,11 +115,11 @@ void Diagram::MakePoly(std::string str) {
         MakePolygon();
     } else if(m_tess){ // 2D tessellation
         Tessellate();
-    } else { // 3D Polytope
+    } else { // 3D Polyhedron
         /*double l=-2/((double)(m_r)/2-(double)(m_r)/(double)(m_p)-1); // Sam Stuff
         double verts[3*(int)l];//3 times the number of needed verts
         CreateNet(10,verts,3*(int)l);*/
-        MakeSolid();
+        MakePolyhedron();
     }
 }
 
@@ -175,7 +175,7 @@ void Diagram::Tessellate() {
     m_shape.resize(m_shape.getVertexCount() - 1); // Remove the last vertex, since we have one too many
 }
 
-void Diagram::MakeSolid() {
+void Diagram::MakePolyhedron() {
     m_scale = 200;
     double theta = GetAngle();  // Calculate our deflection angle
     double length = 2 * m_scale * cos(theta); // How long each side is
@@ -199,32 +199,80 @@ void Diagram::MakeSolid() {
         }
     }
 
-    // Put the vertices into a 2D vertex array for drawing
-    m_shape = sf::VertexArray(sf::Lines, 0);
-    for(int iii = 0; iii < m_vertices.size(); iii++) {
-        m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x,   // Just drop z coordinate
-                                               m_vertices[iii].y)));
-        m_shape[iii].color = Colorgen(iii);
+    bool displayNet = false;
+    if(displayNet) {
+        // Put the vertices into a 2D vertex array for drawing
+        m_shape = sf::VertexArray(sf::Lines, 0);
+        for(int iii = 0; iii < m_vertices.size(); iii++) {
+            m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x,   // Just drop z coordinate
+                                                   m_vertices[iii].y)));
+            m_shape[iii].color = Colorgen(iii);
+        }
+    } else {
+        m_faces = std::vector<std::vector<sf::Vector3f> >(0);
+        for(int iii = 2; iii < m_vertices.size(); iii += 1) {
+            std::vector<sf::Vector3f> face = std::vector<sf::Vector3f>(m_p);
+            face[0] = m_vertices[iii - 1];
+            face[1] = m_vertices[iii];
+            for(int jjj = 2; jjj < face.size(); jjj++) {
+                face[jjj] = RotatePointAboutLine(face[jjj - 2], TAU / m_r * m_s,
+                                                 m_center, face[jjj - 1]);
+            }
+            m_faces.push_back(face);
+        }
+        m_vertices.clear();
+        RotateSolid(0, 0, 0, true);
     }
 }
 
 void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
-    if(xDir == 0 && yDir == 0 && zDir == 0 && !autoRotate || (m_r == -1 || m_tess)) return;
+    if(xDir == 0 && yDir == 0 && zDir == 0 && !autoRotate ||
+       (m_r == -1 || m_tess) || (m_faces.size() < 2 && m_vertices.size() < 0)) return;
     if(autoRotate) {
         xDir = 10;
         yDir = -8;
         zDir = 10;
     }
-    for(int iii = 0; iii < m_vertices.size(); iii++) {
-        m_vertices[iii] = RotatePointAboutLine(m_vertices[iii], PI / 2500,
+
+    bool displayNet = false;
+    if(displayNet) {
+        for(int iii = 0; iii < m_vertices.size(); iii++) {
+            m_vertices[iii] = RotatePointAboutLine(m_vertices[iii], PI / 2500,
                                                m_center, m_center + sf::Vector3f(xDir, yDir, zDir));
-    }
-    m_shape = sf::VertexArray(sf::Lines, 0);
-    for(int iii = 0; iii < m_vertices.size(); iii++) {
-        sf::Vertex vert = sf::Vertex(sf::Vector2f(m_vertices[iii].x,
-                                                  m_vertices[iii].y));
-        vert.color = Colorgen(iii);
-        m_shape.append(vert);
+        }
+        m_shape = sf::VertexArray(sf::Lines, 0);
+        for(int iii = 0; iii < m_vertices.size(); iii++) {
+            sf::Vertex vert = sf::Vertex(sf::Vector2f(m_vertices[iii].x,
+                                                      m_vertices[iii].y));
+            vert.color = Colorgen(iii);
+            m_shape.append(vert);
+        }
+    } else {
+        for(int iii = 0; iii < m_faces.size(); iii++) {
+            for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {
+                m_faces[iii][jjj] = RotatePointAboutLine(m_faces[iii][jjj], PI / 2500,
+                                                     m_center, m_center + sf::Vector3f(xDir, yDir, zDir));
+            }
+        }
+        m_shape = sf::VertexArray(sf::Triangles, 0);
+        for(int iii = 0; iii < m_faces.size(); iii++) {
+            for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {
+                sf::Vertex firstVert = sf::Vertex(sf::Vector2f(m_faces[iii][m_q * jjj % m_p].x,
+                                                               m_faces[iii][m_q * jjj % m_p].y));
+                sf::Vertex secondVert = sf::Vertex(sf::Vector2f(m_faces[iii][m_q * (jjj + 1) % m_p].x,
+                                                                m_faces[iii][m_q * (jjj + 1) % m_p].y));
+                sf::Vertex thirdVert = sf::Vertex(sf::Vector2f(m_faces[iii][m_q * (jjj + 2) % m_p].x,
+                                                               m_faces[iii][m_q * (jjj + 2) % m_p].y));
+
+                firstVert.color = Colorgen(iii);
+                secondVert.color = Colorgen(iii);
+                thirdVert.color = Colorgen(iii);
+
+                m_shape.append(firstVert);
+                m_shape.append(secondVert);
+                m_shape.append(thirdVert);
+            }
+        }
     }
 }
 
