@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <string>
+#include <algorithm>
 #include <iostream>
 #include <math.h>
 #include "diagram.h"
@@ -135,6 +136,36 @@ double Diagram::GetAngle() {
     }
 }
 
+void Diagram::OrderFaces() {
+    std::vector<double> zPos = std::vector<double>(m_faces.size());
+    for(int iii = 0; iii < zPos.size(); iii++) {
+            double avgZ = 0;
+        for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {
+            avgZ += m_faces[iii][jjj].z;
+        }
+        zPos[iii] = avgZ / 5;
+    }
+    std::vector<double> orderedZPos = zPos;
+    std::sort(orderedZPos.begin(), orderedZPos.end());
+    std::vector<std::vector<sf::Vector3f> > orderedFaces = std::vector<std::vector<sf::Vector3f> >(0);
+    int prevLoc = 0;
+    for(int iii = 0; iii < m_faces.size(); iii++) {
+        int loc = 0;
+        for(int jjj = prevLoc + 1; jjj < orderedZPos.size(); jjj++) {
+            if(zPos[jjj] == orderedZPos[iii]) {
+                loc = jjj;
+                if(jjj + 1 < orderedZPos.size() && orderedZPos[jjj + 1] == orderedZPos[jjj])
+                    prevLoc = loc;
+                else
+                    prevLoc = 0;
+                break;
+            }
+        }
+        orderedFaces.push_back(m_faces[loc]);
+    }
+    m_faces = orderedFaces;
+}
+
 void Diagram::MakePoly(std::string str) {
     if(str != "")
         SetPQR(str);
@@ -234,16 +265,24 @@ void Diagram::MakePolyhedron() {
         }
     } else {
         m_faces = std::vector< std::vector<sf::Vector3f> >(0);
-        for(int iii = 2; iii < m_vertices.size(); iii += 1) {
+        for(int iii = 1; iii < m_vertices.size(); iii += 2) {
             std::vector<sf::Vector3f> face = std::vector<sf::Vector3f>(m_p);
+            std::vector<sf::Vector3f> oppFace = std::vector<sf::Vector3f>(m_p);
             face[0] = m_vertices[iii - 1];
             face[1] = m_vertices[iii];
+            oppFace[0] = m_vertices[iii - 1];
+            oppFace[1] = m_vertices[iii];
             for(int jjj = 2; jjj < face.size(); jjj++) {
                 face[jjj] = RotatePointAboutLine(face[jjj - 2], TAU / m_r * m_s,
                                                  m_center, face[jjj - 1]);
+                oppFace[jjj] = RotatePointAboutLine(oppFace[jjj - 2], -TAU / m_r * m_s,
+                                                 m_center, oppFace[jjj - 1]);
             }
             if(IsGood(face)) {
                 m_faces.push_back(face);
+            }
+            if(IsGood(oppFace)) {
+                m_faces.push_back(oppFace);
             }
         }
         std::cout << m_faces.size() << std::endl;
@@ -281,6 +320,9 @@ void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
                                                      m_center, m_center + sf::Vector3f(xDir, yDir, zDir));
             }
         }
+
+        OrderFaces();
+
         m_shape = sf::VertexArray(sf::Triangles, 0);
         for(int iii = 0; iii < m_faces.size(); iii++) {
             for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {

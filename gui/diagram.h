@@ -32,6 +32,8 @@ public:
     void SetPQR(std::string  str); // Sets p, q, r, and s
     double GetAngle(); // Returns the "bend angle" for polyhedra
 
+    void OrderFaces();
+
     void MakePoly(std::string str = "");
     void MakePolygon();
     void Tessellate();
