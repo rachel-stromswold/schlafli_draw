@@ -148,6 +148,7 @@ void Diagram::OrderFaces() {
     std::vector<double> orderedZPos = zPos;
     std::sort(orderedZPos.begin(), orderedZPos.end());
     std::vector<std::vector<sf::Vector3f> > orderedFaces = std::vector<std::vector<sf::Vector3f> >(0);
+    std::vector<sf::Color> newColors = std::vector<sf::Color>(0);
     int prevLoc = 0;
     for(int iii = 0; iii < m_faces.size(); iii++) {
         int loc = 0;
@@ -162,8 +163,10 @@ void Diagram::OrderFaces() {
             }
         }
         orderedFaces.push_back(m_faces[loc]);
+        newColors.push_back(m_colors[loc]);
     }
     m_faces = orderedFaces;
+    m_colors = newColors;
 }
 
 void Diagram::MakePoly(std::string str) {
@@ -280,9 +283,11 @@ void Diagram::MakePolyhedron() {
             }
             if(IsGood(face)) {
                 m_faces.push_back(face);
+                m_colors.push_back(Colorgen(iii));
             }
             if(IsGood(oppFace)) {
                 m_faces.push_back(oppFace);
+                m_colors.push_back(Colorgen(iii + 1));
             }
         }
         std::cout << m_faces.size() << std::endl;
@@ -333,9 +338,9 @@ void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
                 sf::Vertex thirdVert = sf::Vertex(sf::Vector2f(m_faces[iii][m_q * (jjj + 2) % m_p].x,
                                                                m_faces[iii][m_q * (jjj + 2) % m_p].y));
 
-                firstVert.color = Colorgen(iii);
-                secondVert.color = Colorgen(iii);
-                thirdVert.color = Colorgen(iii);
+                firstVert.color = m_colors[iii];
+                secondVert.color = m_colors[iii];
+                thirdVert.color = m_colors[iii];
 
                 m_shape.append(firstVert);
                 m_shape.append(secondVert);

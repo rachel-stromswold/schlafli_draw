@@ -20,6 +20,7 @@ private:
     sf::VertexArray m_shape;
     std::vector<sf::Vector3f> m_vertices;
     std::vector<std::vector<sf::Vector3f> > m_faces;
+    std::vector<sf::Color> m_colors; // Colors for the faces
 public:
     Diagram();
     Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string str = "");
