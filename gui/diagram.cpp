@@ -143,7 +143,7 @@ void Diagram::OrderFaces() {
         for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {
             avgZ += m_faces[iii][jjj].z;
         }
-        zPos[iii] = avgZ / 5;
+        zPos[iii] = avgZ / m_faces[iii].size();
     }
     std::vector<double> orderedZPos = zPos;
     std::sort(orderedZPos.begin(), orderedZPos.end());
@@ -290,6 +290,27 @@ void Diagram::MakePolyhedron() {
                 m_colors.push_back(Colorgen(iii + 1));
             }
         }
+        if(m_r == 5 && m_s == 2) { // Special method for Great Dodecahedron
+            m_colors.clear();
+            std::vector<std::vector<sf::Vector3f> > triangleFaces = std::vector<std::vector<sf::Vector3f> >(0);
+            for(int iii = 0; iii < m_faces.size(); iii++) {
+                    std::cout << m_faces[iii][0].x << ", ";
+                for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {
+                    std::vector<sf::Vector3f> triFace = std::vector<sf::Vector3f>(0);
+                    triFace.push_back(m_faces[iii][jjj % m_faces[iii].size()]);
+                    std::cout << triFace[0].y << ", ";
+                    triFace.push_back(m_faces[iii][(jjj + 1) % m_faces[iii].size()]);
+                    std::cout << triFace[1].y << ", ";
+                    triFace.push_back(m_faces[iii][(jjj + 2) % m_faces[iii].size()]);
+                    std::cout << triFace[2].y << ", ";
+
+                    triangleFaces.push_back(triFace);
+                    m_colors.push_back(Colorgen(rand()));
+                    std::cout << triangleFaces[jjj][2].y << std::endl;
+                }
+            }
+            m_faces = triangleFaces;
+        }
         std::cout << m_faces.size() << std::endl;
         m_vertices.clear();
         RotateSolid(0, 0, 0, true);
@@ -350,7 +371,10 @@ void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
                 m_shape.append(firstVert);
                 m_shape.append(secondVert);
                 m_shape.append(thirdVert);
-                if(m_faces[iii].size() > 3) m_shape.append(fourthVert);
+                if(m_faces[iii].size() > 3)
+                    m_shape.append(fourthVert);
+                else
+                    break;
             }
         }
     }
