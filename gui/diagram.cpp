@@ -298,7 +298,7 @@ void Diagram::MakePolyhedron() {
 
 void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
     if(xDir == 0 && yDir == 0 && zDir == 0 && !autoRotate ||
-       (m_r == -1 || m_tess) || (m_faces.size() < 2 && m_vertices.size() < 0)) return;
+       (m_r == -1 || m_tess) || (m_faces.size() < 2 && m_vertices.size() < 2)) return;
     if(autoRotate) {
         xDir = 10;
         yDir = -8;
@@ -327,8 +327,10 @@ void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
         }
 
         OrderFaces();
-
-        m_shape = sf::VertexArray(sf::Triangles, 0);
+        if(m_faces[0].size() > 3)
+            m_shape = sf::VertexArray(sf::Quads, 0);
+        else
+            m_shape = sf::VertexArray(sf::Triangles, 0);
         for(int iii = 0; iii < m_faces.size(); iii++) {
             for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {
                 sf::Vertex firstVert = sf::Vertex(sf::Vector2f(m_faces[iii][m_q * jjj % m_p].x,
@@ -337,14 +339,18 @@ void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
                                                                 m_faces[iii][m_q * (jjj + 1) % m_p].y));
                 sf::Vertex thirdVert = sf::Vertex(sf::Vector2f(m_faces[iii][m_q * (jjj + 2) % m_p].x,
                                                                m_faces[iii][m_q * (jjj + 2) % m_p].y));
+                sf::Vertex fourthVert = sf::Vertex(sf::Vector2f(m_faces[iii][m_q * (jjj + 3) % m_p].x,
+                                                               m_faces[iii][m_q * (jjj + 3) % m_p].y));
 
                 firstVert.color = m_colors[iii];
                 secondVert.color = m_colors[iii];
                 thirdVert.color = m_colors[iii];
+                fourthVert.color = m_colors[iii];
 
                 m_shape.append(firstVert);
                 m_shape.append(secondVert);
                 m_shape.append(thirdVert);
+                if(m_faces[iii].size() > 3) m_shape.append(fourthVert);
             }
         }
     }
@@ -352,7 +358,7 @@ void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
 
 // Generate the colors for the lines so it's not all white and boring
 sf::Color Diagram::Colorgen(int seed) {
-    int hue = ((seed + 23657) * 15274) % 360;
+    int hue = (int)((seed * 42 * 23657) * 15274) % 360;
     return HSVtoRGB(hue, 1, 1);
 }
 
