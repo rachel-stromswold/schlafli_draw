@@ -17,6 +17,7 @@ int main() {
                            (window.getSize().y - but.GetHeight()) / 2 + but.GetHeight());
 
     bool autoRotate = true;
+    double rotationAngle = 2500;
 
     while (window.isOpen())
     {
@@ -30,21 +31,27 @@ int main() {
                 input.EnterText(event.text.unicode);
             } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Tab) {
                 autoRotate = !autoRotate;
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::L) {
+                poly.ToggleEdges();
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::X) {
+                rotationAngle += 20;
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::C) {
+                rotationAngle -= 20;
+                if(rotationAngle < 20) rotationAngle = 20;
             } else if ((event.type == sf::Event::MouseButtonPressed &&
                         event.mouseButton.button == sf::Mouse::Left &&
                         but.IsPressed(event.mouseButton.x, event.mouseButton.y)) ||
                        (event.type == sf::Event::KeyPressed &&
                         event.key.code == sf::Keyboard::Return))
             {
-                poly.SetPQR(input.GetStoredString());
-                poly.MakePoly();
+                poly.MakePoly(input.GetStoredString());
             }
         }
         window.clear();
         poly.RotateSolid(sf::Keyboard::isKeyPressed(sf::Keyboard::W) - sf::Keyboard::isKeyPressed(sf::Keyboard::S),
                          sf::Keyboard::isKeyPressed(sf::Keyboard::A) - sf::Keyboard::isKeyPressed(sf::Keyboard::D),
                          sf::Keyboard::isKeyPressed(sf::Keyboard::E) - sf::Keyboard::isKeyPressed(sf::Keyboard::Q),
-                         autoRotate);
+                         autoRotate, rotationAngle);
         poly.Draw();
         input.Draw();
         but.Draw();

@@ -31,7 +31,7 @@ Diagram::Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string
 bool Diagram::IsGood(sf::Vertex vert1, sf::Vertex vert2) {
     if(m_shape.getVertexCount() <= 1) // An empty set, or only one point, doesn't have any lines for us to overlap with
         return true;
-    for(int iii = 0; iii < m_shape.getVertexCount() - 1; iii += 2) { // Check all lines in m_shape
+        for(int iii = 0; iii < m_shape.getVertexCount() - 1; iii += 2) { // Check all lines in m_shape
         // Returns true if the two vertices appear in sequence anywhere in m_shape (not necessarily in order)
         if((m_shape[iii].position == vert1.position && m_shape[iii + 1].position == vert2.position) ||
            (m_shape[iii].position == vert2.position && m_shape[iii + 1].position == vert1.position))
@@ -58,6 +58,7 @@ bool Diagram::IsGood(sf::Vector3f vect1, sf::Vector3f vect2) {
 }
 
 bool Diagram::IsGood(std::vector<sf::Vector3f> face) {
+    // Compare the coordinates of the midpoints of each existing face and the input to see if the input already exists
     for(int iii = 0; iii < m_faces.size(); iii++) {
         double avgX1 = 0, avgX2 = 0,
             avgY1 = 0, avgY2 = 0,
@@ -81,6 +82,10 @@ bool Diagram::IsGood(std::vector<sf::Vector3f> face) {
            (int)(avgZ1 + .5) == (int)(avgZ2 + .5))
             return false;
     }
+    return true;
+}
+
+bool Diagram::IsGood(sf::Color c) {
     return true;
 }
 
@@ -118,7 +123,7 @@ void Diagram::SetPQR(std::string str) {
 
     while(m_q > m_p / 2) m_q = abs(m_p - m_q); // Put q in (1, p/2) for convenience
 
-    //(p-2)*180/p is the interior angle of 1 vertex on the regular shape
+    //(p - 2) * 180 / p is the interior angle of the regular shape
     if(m_r * ((m_p - 2) * PI / m_p) == TAU) {
         m_tess = true; // This is a tessellation of a plane
     } else {
@@ -137,35 +142,43 @@ double Diagram::GetAngle() {
 }
 
 void Diagram::OrderFaces() {
+    // Create a vector for the z position of the midpoint of each face
     std::vector<double> zPos = std::vector<double>(m_faces.size());
-    for(int iii = 0; iii < zPos.size(); iii++) {
-            double avgZ = 0;
+    for(int iii = 0; iii < zPos.size(); iii++) { // Go through each face
+            double avgZ = 0; // The average position; start at 0
         for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {
-            avgZ += m_faces[iii][jjj].z;
+            avgZ += m_faces[iii][jjj].z; // Sum the z coordinates of each vertex
         }
-        zPos[iii] = avgZ / m_faces[iii].size();
+        zPos[iii] = avgZ / m_faces[iii].size(); // Divide by the number of vertices to get an average z
     }
-    std::vector<double> orderedZPos = zPos;
-    std::sort(orderedZPos.begin(), orderedZPos.end());
+    std::vector<double> orderedZPos = zPos; // A new vector, which is just zPos in ascending order
+    std::sort(orderedZPos.begin(), orderedZPos.end()); // Put our new vector in ascending order
+    // A new vector which will be our faces in ascending ourder
     std::vector<std::vector<sf::Vector3f> > orderedFaces = std::vector<std::vector<sf::Vector3f> >(0);
+    // A new vector which will be our corresponding reordered colors
     std::vector<sf::Color> newColors = std::vector<sf::Color>(0);
-    int prevLoc = 0;
+
+    // Apply the same transformation to our faces that we did to zPos to order it
+    int prevLoc = 0; // In case we have multiple faces on the same z-level
     for(int iii = 0; iii < m_faces.size(); iii++) {
-        int loc = 0;
-        for(int jjj = prevLoc + 1; jjj < orderedZPos.size(); jjj++) {
-            if(zPos[jjj] == orderedZPos[iii]) {
-                loc = jjj;
+        int loc = 0; // The original index of the iiith element in orderedZPos
+        for(int jjj = prevLoc + 1; jjj < orderedZPos.size(); jjj++) { // If we already found one element, start past it
+            if(zPos[jjj] == orderedZPos[iii]) { // If we have a match
+                loc = jjj; // Set loc to the index of the match
+
+                // If we're looking for the same number again next time
                 if(jjj + 1 < orderedZPos.size() && orderedZPos[jjj + 1] == orderedZPos[jjj])
-                    prevLoc = loc;
+                    prevLoc = loc; // Set prevloc to where we stopped so that we don't justs find the same index again
                 else
-                    prevLoc = 0;
-                break;
+                    prevLoc = 0; // Otherwise, start at the beginning again
+                break; // Once we've found our location, we're done
             }
         }
-        orderedFaces.push_back(m_faces[loc]);
+        orderedFaces.push_back(m_faces[loc]); // Add the determined face to the end of our ordered list of faces
+        // Apply the same transformation to colors, so that the faces don't change color as the change z position
         newColors.push_back(m_colors[loc]);
     }
-    m_faces = orderedFaces;
+    m_faces = orderedFaces; // Set our ordered lists to be our new stored lists
     m_colors = newColors;
 }
 
@@ -239,7 +252,7 @@ void Diagram::MakePolyhedron() {
     double length = 2 * m_scale * cos(theta); // How long each side is
     m_vertices = std::vector<sf::Vector3f>(2);
     m_vertices[0] = sf::Vector3f(m_center.x + m_scale, m_center.y, m_center.z); // Starting with a point on the sphere
-    m_vertices[1] = sf::Vector3f(m_vertices[0].x + length * cos(PI - theta),    // First edge to be created
+    m_vertices[1] = sf::Vector3f(m_vertices[0].x - length * cos(theta),    // First edge to be created
                                  m_vertices[0].y + length * sin(theta),
                                  m_vertices[0].z);
 
@@ -257,103 +270,102 @@ void Diagram::MakePolyhedron() {
         }
     }
 
-    bool displayNet = false;
-    if(displayNet) {
+    if(m_displayEdges) { // If we're only concerned with the edges
         // Put the vertices into a 2D vertex array for drawing
         m_shape = sf::VertexArray(sf::Lines, 0);
         for(int iii = 0; iii < m_vertices.size(); iii++) {
-            m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x,   // Just drop z coordinate
+            m_shape.append(sf::Vertex(sf::Vector2f(m_vertices[iii].x,   // Just drop the z coordinate for 2D
                                                    m_vertices[iii].y)));
             m_shape[iii].color = Colorgen(iii);
         }
-    } else {
+    } else { // We want to display all the faces of the polyhedron
+        // This is our set of faces (themselves a collection of points), or a collection of a collection of points
         m_faces = std::vector< std::vector<sf::Vector3f> >(0);
-        for(int iii = 1; iii < m_vertices.size(); iii += 2) {
-            std::vector<sf::Vector3f> face = std::vector<sf::Vector3f>(m_p);
-            std::vector<sf::Vector3f> oppFace = std::vector<sf::Vector3f>(m_p);
-            face[0] = m_vertices[iii - 1];
+        // Go through each edge and draw the two faces that border it
+        for(int iii = 1; iii < m_vertices.size(); iii += 2) { // Our vertices are in edge pairs, so go by 2s
+            std::vector<sf::Vector3f> face = std::vector<sf::Vector3f>(m_p); // One of the two faces
+            std::vector<sf::Vector3f> oppFace = std::vector<sf::Vector3f>(m_p); // The other face
+
+            face[0] = m_vertices[iii - 1]; // Add the edge's vertices to both faces, since we know they're on it
             face[1] = m_vertices[iii];
             oppFace[0] = m_vertices[iii - 1];
             oppFace[1] = m_vertices[iii];
+
             for(int jjj = 2; jjj < face.size(); jjj++) {
                 face[jjj] = RotatePointAboutLine(face[jjj - 2], TAU / m_r * m_s,
                                                  m_center, face[jjj - 1]);
                 oppFace[jjj] = RotatePointAboutLine(oppFace[jjj - 2], -TAU / m_r * m_s,
                                                  m_center, oppFace[jjj - 1]);
             }
-            if(IsGood(face)) {
+            if(IsGood(face)) { // If the face doesn't already exist, add it to our vector
                 m_faces.push_back(face);
-                m_colors.push_back(Colorgen(iii));
+                m_colors.push_back(Colorgen(iii)); // Also add the corresponding color to the color vector
             }
-            if(IsGood(oppFace)) {
+            if(IsGood(oppFace)) { // Do the same as above for the other face
                 m_faces.push_back(oppFace);
                 m_colors.push_back(Colorgen(iii + 1));
             }
         }
-        if(m_r == 5 && m_s == 2) { // Special method for Great Dodecahedron
+        if(m_r == 5 && m_s == 2) { // Special method for Great Dodecahedron -- split each pentagonal face into triangles
             m_colors.clear();
             std::vector<std::vector<sf::Vector3f> > triangleFaces = std::vector<std::vector<sf::Vector3f> >(0);
             for(int iii = 0; iii < m_faces.size(); iii++) {
-                    std::cout << m_faces[iii][0].x << ", ";
                 for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {
                     std::vector<sf::Vector3f> triFace = std::vector<sf::Vector3f>(0);
                     triFace.push_back(m_faces[iii][jjj % m_faces[iii].size()]);
-                    std::cout << triFace[0].y << ", ";
                     triFace.push_back(m_faces[iii][(jjj + 1) % m_faces[iii].size()]);
-                    std::cout << triFace[1].y << ", ";
                     triFace.push_back(m_faces[iii][(jjj + 2) % m_faces[iii].size()]);
-                    std::cout << triFace[2].y << ", ";
 
                     triangleFaces.push_back(triFace);
                     m_colors.push_back(Colorgen(rand()));
-                    std::cout << triangleFaces[jjj][2].y << std::endl;
                 }
             }
-            m_faces = triangleFaces;
+                m_faces = triangleFaces;
         }
-        std::cout << m_faces.size() << std::endl;
         m_vertices.clear();
         RotateSolid(0, 0, 0, true);
     }
 }
 
-void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
+void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate, double rotateSpeed) {
+    // If we're not rotating, or we don't have any faces or vertices to rotate, just finish now
     if(xDir == 0 && yDir == 0 && zDir == 0 && !autoRotate ||
        (m_r == -1 || m_tess) || (m_faces.size() < 2 && m_vertices.size() < 2)) return;
-    if(autoRotate) {
+    m_rotateSpeed = rotateSpeed; // Set our new speed
+    if(autoRotate) { // If we're set to rotate automatically, do so around this arbitrary axis
         xDir = 10;
         yDir = -8;
         zDir = 10;
     }
 
-    bool displayNet = false;
-    if(displayNet) {
-        for(int iii = 0; iii < m_vertices.size(); iii++) {
-            m_vertices[iii] = RotatePointAboutLine(m_vertices[iii], PI / 2500,
+    if(m_displayEdges) { // If we're displaying just the edges, not the faces
+        for(int iii = 0; iii < m_vertices.size(); iii++) { // Rotate each point around our axis
+            m_vertices[iii] = RotatePointAboutLine(m_vertices[iii], PI / m_rotateSpeed,
                                                m_center, m_center + sf::Vector3f(xDir, yDir, zDir));
         }
-        m_shape = sf::VertexArray(sf::Lines, 0);
+        m_shape = sf::VertexArray(sf::Lines, 0); // Clear out m_shape so we can add our newly rotates points instead
         for(int iii = 0; iii < m_vertices.size(); iii++) {
-            sf::Vertex vert = sf::Vertex(sf::Vector2f(m_vertices[iii].x,
+            sf::Vertex vert = sf::Vertex(sf::Vector2f(m_vertices[iii].x,    // Create our vertex
                                                       m_vertices[iii].y));
-            vert.color = Colorgen(iii);
-            m_shape.append(vert);
+            vert.color = Colorgen(iii); // Set the color pseudo-randomly
+            m_shape.append(vert); // Add the vertex to m_shape
         }
     } else {
-        for(int iii = 0; iii < m_faces.size(); iii++) {
+        for(int iii = 0; iii < m_faces.size(); iii++) { // Rotate each vertex around our axis
             for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {
-                m_faces[iii][jjj] = RotatePointAboutLine(m_faces[iii][jjj], PI / 2500,
+                m_faces[iii][jjj] = RotatePointAboutLine(m_faces[iii][jjj], PI / m_rotateSpeed,
                                                      m_center, m_center + sf::Vector3f(xDir, yDir, zDir));
             }
         }
 
-        OrderFaces();
-        if(m_faces[0].size() > 3)
+        OrderFaces(); // Rearrange faces so that we draw the ones furthest from the camera first
+        if(m_faces[0].size() > 3) // Our faces aren't triangles, so we want to connect 4 vertices at a time
             m_shape = sf::VertexArray(sf::Quads, 0);
-        else
+        else                      // Our faces are triangles, so we can just connect the vertices and be done with it
             m_shape = sf::VertexArray(sf::Triangles, 0);
-        for(int iii = 0; iii < m_faces.size(); iii++) {
-            for(int jjj = 0; jjj < m_faces[iii].size(); jjj++) {
+        for(int iii = 0; iii < m_faces.size(); iii++) { // Go through each face
+            for(int jjj = 0; jjj < m_faces[iii].size(); jjj += 2) { // Go through the vertices
+                // Create a vertex for each set of three/four consecutive vertices
                 sf::Vertex firstVert = sf::Vertex(sf::Vector2f(m_faces[iii][m_q * jjj % m_p].x,
                                                                m_faces[iii][m_q * jjj % m_p].y));
                 sf::Vertex secondVert = sf::Vertex(sf::Vector2f(m_faces[iii][m_q * (jjj + 1) % m_p].x,
@@ -361,23 +373,30 @@ void Diagram::RotateSolid(int xDir, int yDir, int zDir, bool autoRotate) {
                 sf::Vertex thirdVert = sf::Vertex(sf::Vector2f(m_faces[iii][m_q * (jjj + 2) % m_p].x,
                                                                m_faces[iii][m_q * (jjj + 2) % m_p].y));
                 sf::Vertex fourthVert = sf::Vertex(sf::Vector2f(m_faces[iii][m_q * (jjj + 3) % m_p].x,
-                                                               m_faces[iii][m_q * (jjj + 3) % m_p].y));
+                                                                m_faces[iii][m_q * (jjj + 3) % m_p].y));
 
+                // Set all vertices to the same color so the face has a uniform color
                 firstVert.color = m_colors[iii];
                 secondVert.color = m_colors[iii];
                 thirdVert.color = m_colors[iii];
                 fourthVert.color = m_colors[iii];
 
+                // Add the vertices to be drawn
                 m_shape.append(firstVert);
                 m_shape.append(secondVert);
                 m_shape.append(thirdVert);
-                if(m_faces[iii].size() > 3)
+                if(m_faces[iii].size() > 3) // Don't add the fourth vertex if we're using triangles
                     m_shape.append(fourthVert);
                 else
-                    break;
+                    break; // We only had three vertices on the face, so we're done after one iteration
             }
         }
     }
+}
+
+void Diagram::ToggleEdges() {
+    m_displayEdges = !m_displayEdges; // Invert our current display setting
+    MakePoly(); // Remake our polyhedron with the new setting
 }
 
 // Generate the colors for the lines so it's not all white and boring
