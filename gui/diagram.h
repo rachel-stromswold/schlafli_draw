@@ -14,6 +14,7 @@ private:
 
     bool m_tess = false;   // True if we have a 2D tesselation, false otherwise (2D polygon or 3D polytope)
     bool m_displayEdges = true; // Whether or not we want to display the edges or faces of the polyhedron
+    bool m_allWhite = false; // Whether or not we want to display colors on lines (does not affect faces)
 
     double m_rotateSpeed;  // The speed with which we rotate
 
@@ -75,6 +76,8 @@ public:
 
     // Toggle between displaying faces and edges
     void ToggleEdges();
+    // Toggle between colorful and all-white lines
+    void ToggleColors();
 
     // Draws our stored shape to the window
     void Draw();

@@ -38,6 +38,8 @@ int main() {
             } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::C) {
                 rotationAngle -= 20;
                 if(rotationAngle < 20) rotationAngle = 20;
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Z) {
+                poly.ToggleColors();
             } else if ((event.type == sf::Event::MouseButtonPressed &&
                         event.mouseButton.button == sf::Mouse::Left &&
                         but.IsPressed(event.mouseButton.x, event.mouseButton.y)) ||

@@ -399,8 +399,20 @@ void Diagram::ToggleEdges() {
     MakePoly(); // Remake our polyhedron with the new setting
 }
 
+void Diagram::ToggleColors() {
+    m_allWhite = !m_allWhite;
+    if(m_r <= 1)
+        MakePolygon();
+    else if(m_tess)
+        Tessellate();
+    else
+        RotateSolid(0, 0, 0, true);
+}
+
 // Generate the colors for the lines so it's not all white and boring
 sf::Color Diagram::Colorgen(int seed) {
+    if(m_allWhite && (m_r <= 1 || m_tess || m_displayEdges))
+        return sf::Color::White;
     int hue = (int)((seed * 42 * 23657) * 15274) % 360;
     return HSVtoRGB(hue, 1, 1);
 }
