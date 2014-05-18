@@ -25,6 +25,9 @@ public:
     double GetHeight();
 
     void Draw();
+
+    void SetText(std::string str);
+    std::string GetText();
 };
 
 #endif //BUTTON_H

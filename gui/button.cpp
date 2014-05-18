@@ -34,8 +34,16 @@ void Button::Draw() {
 }
 
 bool Button::IsPressed(int xP, int yP) {
-    if(m_x < xP && xP <m_x + m_width * 15 && m_y < yP && yP < m_y + m_height * 15)
+    if(m_x < xP && xP <m_x + m_width && m_y < yP && yP < m_y + m_height * 15)
         return true;
     else
         return false;
+}
+
+void Button::SetText(std::string str){
+    m_text.setString(str);
+}
+
+std::string Button::GetText(){
+    return m_text.getString();
 }

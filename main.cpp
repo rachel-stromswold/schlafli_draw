@@ -11,8 +11,24 @@ int main() {
     if(!inFont.loadFromFile("VeraMono.ttf")){/*error handling*/}
 
     InputBox input = InputBox(&window, inFont, 1, 1, window.getSize().x * .25, window.getSize().y * .035);
+
     Button but = Button(&window, inFont, window.getSize().x * .25 + 6, 2, window.getSize().x * .25 ,
                         window.getSize().y * .03, "Click to Submit");
+
+    sf::Text edgeCap = sf::Text("faces (3d) ", inFont, 15);
+    edgeCap.setPosition(window.getSize().x * .5 + 12, 2);
+    edgeCap.setColor(sf::Color::White);
+
+    Button edge = Button(&window, inFont, window.getSize().x * .66 + 2, 3, 14 ,
+                        12, "");
+
+    sf::Text colorCap = sf::Text("color ", inFont, 15);
+    colorCap.setPosition(window.getSize().x * .7 - 3, 2);
+    colorCap.setColor(sf::Color::White);
+
+    Button color = Button(&window, inFont, window.getSize().x * .75 + 14, 3, 14 ,
+                        12, "x");
+
     Diagram poly = Diagram(&window, window.getSize().x / 2,
                            (window.getSize().y - but.GetHeight()) / 2 + but.GetHeight());
 
@@ -40,13 +56,24 @@ int main() {
                 if(rotationAngle < 20) rotationAngle = 20;
             } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Z) {
                 poly.ToggleColors();
-            } else if ((event.type == sf::Event::MouseButtonPressed &&
-                        event.mouseButton.button == sf::Mouse::Left &&
-                        but.IsPressed(event.mouseButton.x, event.mouseButton.y)) ||
-                       (event.type == sf::Event::KeyPressed &&
-                        event.key.code == sf::Keyboard::Return))
-            {
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return){
                 poly.MakePoly(input.GetStoredString());
+            } else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left){
+                if( but.IsPressed(event.mouseButton.x, event.mouseButton.y) ){
+                    poly.MakePoly(input.GetStoredString());
+                } else if(edge.IsPressed(event.mouseButton.x, event.mouseButton.y)){
+                    poly.ToggleEdges();
+                    if(edge.GetText()=="x")
+                        edge.SetText("");
+                    else
+                        edge.SetText("x");
+                } else if(color.IsPressed(event.mouseButton.x, event.mouseButton.y)){
+                    poly.ToggleColors();
+                    if(color.GetText()=="x")
+                        color.SetText("");
+                    else
+                        color.SetText("x");
+                }
             }
         }
         window.clear();
@@ -57,6 +84,10 @@ int main() {
         poly.Draw();
         input.Draw();
         but.Draw();
+        edge.Draw();
+        color.Draw();
+        window.draw(edgeCap);
+        window.draw(colorCap);
         window.display();
     }
     return 0;
