@@ -85,6 +85,8 @@ public:
 
 // Converts a string with a number in it to an integer containing that number; move to better location in the future
 int ToInt(std::string str);
+// Returns the gcf of the inputs
+int GreatestCommonFactor(int a, int b);
 // Converts a color given in HSV to its RGB equivalent
 sf::Color HSVtoRGB(int hue, double sat, double val);
 

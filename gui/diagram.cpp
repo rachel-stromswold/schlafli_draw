@@ -199,7 +199,8 @@ void Diagram::MakePolygon() {
     // The initial angle (for the first vertex)
     double angle = PI / 2 + (PI / m_p * ((m_p + 1) % 2)); // Ensure there is a flat line on the bottom
     // Calculate the location of each vertex
-    for(int iii = 0; iii < m_shape.getVertexCount() - 1; iii += 2) {
+    int gcf = GreatestCommonFactor(m_p, m_q);
+    for(int iii = 0, jjj = 0; iii < m_shape.getVertexCount() - 1; iii += 2, jjj++) {
         // Adds the vertices to the diagram
         m_shape[iii].position = sf::Vector2f(m_center.x + cos(angle) * m_scale,
                                              m_center.y - sin(angle) * m_scale);
@@ -207,8 +208,13 @@ void Diagram::MakePolygon() {
         m_shape[iii + 1].position = sf::Vector2f(m_center.x + cos(angle) * m_scale,
                                                  m_center.y - sin(angle) * m_scale);
         angle -= (m_q - 1) * (TAU / m_p);
-        m_shape[iii].color = Colorgen(iii);
-        m_shape[iii + 1].color = Colorgen(iii + 1);
+        if(!m_allWhite) {
+            m_shape[iii].color = Colorgen(iii);
+            m_shape[iii + 1].color = Colorgen(iii + 1);
+        } else {
+            m_shape[iii].color = HSVtoRGB((jjj % gcf) * 100, 1, 1);
+            m_shape[iii + 1].color = HSVtoRGB((jjj % gcf) * 100, 1, 1);
+        }
     }
 }
 
@@ -400,12 +406,7 @@ void Diagram::ToggleEdges() {
 
 void Diagram::ToggleColors() {
     m_allWhite = !m_allWhite;
-    if(m_r <= 1)
-        MakePolygon();
-    else if(m_tess)
-        Tessellate();
-    else
-        RotateSolid(0, 0, 0, true);
+    MakePoly();
 }
 
 // Generate the colors for the lines so it's not all white and boring
@@ -487,6 +488,17 @@ int ToInt(std::string str) {
         ret += pow(10, str.length() - 1 - i) * (str[i] - '0');
     }
     return ret;
+}
+
+// Returns the greatest common factor of the inputs
+int GreatestCommonFactor(int a, int b) {
+    int c = 0;
+    while(b != 0) {
+        c = a% b;
+        a = b;
+        b = c;
+    }
+    return a;
 }
 
 // Convert HSV color values to RGB color values
