@@ -2,6 +2,7 @@
 #include ".\gui\text.h"
 #include ".\gui\button.h"
 #include ".\gui\diagram.h"
+#include ".\gui\checkbox.h"
 #include <iostream>
 
 int main() {
@@ -15,25 +16,16 @@ int main() {
     Button but = Button(&window, inFont, window.getSize().x * .25 + 6, 2, window.getSize().x * .25 ,
                         window.getSize().y * .03, "Click to Submit");
 
-    sf::Text edgeCap = sf::Text("faces (3d) ", inFont, 15);
-    edgeCap.setPosition(window.getSize().x * .5 + 12, 2);
-    edgeCap.setColor(sf::Color::White);
+    Checkbox showFaces = Checkbox(&window, inFont, 495, 60, "Display Faces", false);
 
-    Button edge = Button(&window, inFont, window.getSize().x * .66 + 2, 3, 14 ,
-                        12, "");
+    Checkbox showColors = Checkbox(&window, inFont, 495, 80, "Display Colors", true);
 
-    sf::Text colorCap = sf::Text("color ", inFont, 15);
-    colorCap.setPosition(window.getSize().x * .7 - 3, 2);
-    colorCap.setColor(sf::Color::White);
-
-    Button color = Button(&window, inFont, window.getSize().x * .75 + 14, 3, 14 ,
-                        12, "x");
+    Checkbox autoRotate = Checkbox(&window, inFont, 495, 40, "Auto Rotate", true);
 
     Diagram poly = Diagram(&window, window.getSize().x / 2,
                            (window.getSize().y - but.GetHeight()) / 2 + but.GetHeight());
 
-    bool autoRotate = true;
-    double rotationAngle = 2500;
+    double rotationAngle = 2000;
 
     while (window.isOpen())
     {
@@ -45,34 +37,30 @@ int main() {
                 window.close();
             } else if (event.type == sf::Event::TextEntered) {
                 input.EnterText(event.text.unicode);
-            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Tab) {
-                autoRotate = !autoRotate;
-            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::L) {
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Tab ||
+                       event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left &&
+                       autoRotate.IsPressed(event.mouseButton.x, event.mouseButton.y)) {
+                autoRotate.Toggle();
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::L ||
+                       event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left
+                       && showFaces.IsPressed(event.mouseButton.x, event.mouseButton.y)) {
                 poly.ToggleEdges();
+                showFaces.Toggle();
             } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::X) {
                 rotationAngle += 20;
             } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::C) {
                 rotationAngle -= 20;
                 if(rotationAngle < 20) rotationAngle = 20;
-            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Z) {
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Z ||
+                       event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left
+                       && showColors.IsPressed(event.mouseButton.x, event.mouseButton.y)) {
                 poly.ToggleColors();
+                showColors.Toggle();
             } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return){
                 poly.MakePoly(input.GetStoredString());
             } else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left){
                 if( but.IsPressed(event.mouseButton.x, event.mouseButton.y) ){
                     poly.MakePoly(input.GetStoredString());
-                } else if(edge.IsPressed(event.mouseButton.x, event.mouseButton.y)){
-                    poly.ToggleEdges();
-                    if(edge.GetText()=="x")
-                        edge.SetText("");
-                    else
-                        edge.SetText("x");
-                } else if(color.IsPressed(event.mouseButton.x, event.mouseButton.y)){
-                    poly.ToggleColors();
-                    if(color.GetText()=="x")
-                        color.SetText("");
-                    else
-                        color.SetText("x");
                 }
             }
         }
@@ -80,14 +68,18 @@ int main() {
         poly.RotateSolid(sf::Keyboard::isKeyPressed(sf::Keyboard::W) - sf::Keyboard::isKeyPressed(sf::Keyboard::S),
                          sf::Keyboard::isKeyPressed(sf::Keyboard::A) - sf::Keyboard::isKeyPressed(sf::Keyboard::D),
                          sf::Keyboard::isKeyPressed(sf::Keyboard::E) - sf::Keyboard::isKeyPressed(sf::Keyboard::Q),
-                         autoRotate, rotationAngle);
+                         autoRotate.IsToggled(), rotationAngle);
+        // Draw our diagram, input box, and button
         poly.Draw();
         input.Draw();
         but.Draw();
-        edge.Draw();
-        color.Draw();
-        window.draw(edgeCap);
-        window.draw(colorCap);
+
+        // Draw our checkboxes
+        showFaces.Draw();
+        showColors.Draw();
+        autoRotate.Draw();
+
+        // Display everything that we've drawn
         window.display();
     }
     return 0;

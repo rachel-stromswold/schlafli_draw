@@ -5,8 +5,9 @@
 #include <string>
 #include "text.h"
 
-class Button{
-private:
+class Button
+{
+protected:
     int m_x;
     int m_y;
     int m_width;

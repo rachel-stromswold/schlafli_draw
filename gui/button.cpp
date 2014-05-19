@@ -34,7 +34,7 @@ void Button::Draw() {
 }
 
 bool Button::IsPressed(int xP, int yP) {
-    if(m_x < xP && xP <m_x + m_width && m_y < yP && yP < m_y + m_height * 15)
+    if(m_x - 3 < xP && xP < m_x + m_width + 3 && m_y - 3 < yP && yP < m_y + m_height + 2)
         return true;
     else
         return false;

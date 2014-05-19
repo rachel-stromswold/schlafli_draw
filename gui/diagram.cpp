@@ -23,8 +23,7 @@ Diagram::Diagram(sf::RenderWindow* window, int centerX, int centerY, std::string
     m_shape(sf::Lines, 0)
 {
     m_w = window;
-    if (!str.empty())
-        SetPQR(str);
+    SetPQR(str);
     m_scale = 200;
 };
 
