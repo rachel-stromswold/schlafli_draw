@@ -21,7 +21,7 @@ Button::Button(sf::RenderWindow* window, sf::Font font, int x, int y, int width,
     m_rectangle.setOutlineColor(sf::Color(255, 255, 255));
 
     m_rectangle.setPosition(x, y);
-    m_text.setPosition(x, y - 2);
+    m_text.setPosition(x, y - 4);
 }
 
 double Button::GetHeight() {

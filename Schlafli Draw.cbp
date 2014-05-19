@@ -16,6 +16,7 @@
 					<Add option="-DSFML_STATIC" />
 					<Add directory="C:/SFML-2.1/include" />
 					<Add directory="C:/freeglut-2.8.1/include" />
+					<Add directory="gui" />
 				</Compiler>
 				<Linker>
 					<Add option="-static-libgcc" />
@@ -38,6 +39,7 @@
 					<Add option="-O2" />
 					<Add option="-DSFML_STATIC" />
 					<Add directory="C:/SFML-2.1/include" />
+					<Add directory="gui" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -67,6 +69,8 @@
 		</Linker>
 		<Unit filename="gui/button.cpp" />
 		<Unit filename="gui/button.h" />
+		<Unit filename="gui/checkbox.cpp" />
+		<Unit filename="gui/checkbox.h" />
 		<Unit filename="gui/diagram.cpp" />
 		<Unit filename="gui/diagram.h" />
 		<Unit filename="gui/text.cpp" />

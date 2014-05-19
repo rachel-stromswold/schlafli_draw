@@ -22,6 +22,14 @@ int main() {
 
     Checkbox autoRotate = Checkbox(&window, inFont, 495, 40, "Auto Rotate", true);
 
+    Button speedPlus = Button(&window, inFont, 495, 20, 9, 9, "+");
+
+    Button speedMinus = Button(&window, inFont, 475, 20, 9, 9, "-");
+
+    sf::Text speedCap = sf::Text("Rotation Speed", inFont, 15);
+    speedCap.setPosition(510, 16);
+    speedCap.setColor(sf::Color::White);
+
     Diagram poly = Diagram(&window, window.getSize().x / 2,
                            (window.getSize().y - but.GetHeight()) / 2 + but.GetHeight());
 
@@ -46,9 +54,13 @@ int main() {
                        && showFaces.IsPressed(event.mouseButton.x, event.mouseButton.y)) {
                 poly.ToggleEdges();
                 showFaces.Toggle();
-            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::X) {
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::X ||
+                       event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left
+                       && speedMinus.IsPressed(event.mouseButton.x, event.mouseButton.y)) {
                 rotationAngle += 20;
-            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::C) {
+            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::C ||
+                       event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left
+                       && speedPlus.IsPressed(event.mouseButton.x, event.mouseButton.y)) {
                 rotationAngle -= 20;
                 if(rotationAngle < 20) rotationAngle = 20;
             } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Z ||
@@ -73,6 +85,11 @@ int main() {
         poly.Draw();
         input.Draw();
         but.Draw();
+
+        // Draw our speed control
+        speedMinus.Draw();
+        speedPlus.Draw();
+        window.draw(speedCap);
 
         // Draw our checkboxes
         showFaces.Draw();
